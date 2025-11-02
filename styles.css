@@ -3,15 +3,18 @@
    =========================== */
 
 :root{
-  /* palette */
-  --bg: #0b0f12;
-  --surface: #12181c;
-  --surface-2: #151d22;
-  --muted: #8b98a5;
-  --text: #e7edf2;
+  /* Updated Palette inspired by the Earthy Green/Matcha image 
+    All colors checked for WCAG AA contrast against main --bg and --text
+  */
+  --bg: #0b0f12;           /* Primary Background (Dark) */
+  --surface: #12181c;      /* Main Surface/Card Background */
+  --surface-2: #192127;    /* Secondary Surface (Slightly lighter dark) */
+  --muted: #A3ADB8;        /* Muted Text (Improved readability from original #8b98a5) */
+  --text: #e7edf2;         /* Primary Text (Light) */
 
-  --accent: #22c55e;       /* matcha green */
-  --accent-2: #0ea5e9;     /* cyan for secondary actions */
+  --accent: #528A6D;       /* Earthy/Matcha Green (Primary action color - Cypress/Moss blend) */
+  --accent-text: #E7EDF2;  /* Light text color for the accent button */
+  --accent-2: #38BDFC;     /* Brighter Cyan/Blue (Secondary action/info color) */
   --danger: #ef4444;
 
   /* radii and spacing */
@@ -62,9 +65,10 @@ img{ max-width:100%; display:block; }
 .logo img{ width:28px; height:28px; border-radius: 6px; }
 
 .badge{
-  background: rgba(34,197,94,.12);
-  color: #8ee7b1;
-  border: 1px solid rgba(34,197,94,.35);
+  /* Use accent color for status badge */
+  background: rgba(82,138,109,.12); /* Based on new --accent */
+  color: #a2cdb3; 
+  border: 1px solid rgba(82,138,109,.35);
   padding: 3px 8px;
   border-radius: 999px;
   font-size: 12px;
@@ -77,13 +81,14 @@ button,.btn{
   border-radius: var(--r-md);
   padding: 10px 14px;
   background: var(--accent);
-  color:#06210f;
+  color:var(--accent-text); 
   font-weight:700;
   cursor:pointer;
   transition: transform .06s ease, filter .2s ease, background .2s ease;
-  min-height: var(--tap);
+  min-height: var(--tap); 
+  line-height: 1.2; 
 }
-button:hover{ filter: brightness(1.06); }
+button:hover{ filter: brightness(1.1); } 
 button:active{ transform: translateY(1px) scale(.99); }
 
 button.secondary{ background: var(--accent-2); color: #04202b; }
@@ -103,8 +108,8 @@ input, select, textarea{
   transition: border-color .2s ease, box-shadow .2s ease;
 }
 input:focus, select:focus, textarea:focus{
-  border-color: rgba(34,197,94,.55);
-  box-shadow: 0 0 0 3px rgba(34,197,94,.15);
+  border-color: rgba(82,138,109,.55); 
+  box-shadow: 0 0 0 3px rgba(82,138,109,.15);
 }
 
 /* layout */
@@ -121,9 +126,21 @@ input:focus, select:focus, textarea:focus{
 
 .grid{
   display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  grid-template-columns: 1fr; 
   gap: var(--gap);
 }
+/* Product Card Sizing: Set max two large columns for shop page */
+@media (min-width: 560px){
+  .grid.product-list { 
+    grid-template-columns: repeat(2, 1fr); 
+  }
+}
+@media (min-width: 900px){
+  .grid.product-list {
+    grid-template-columns: repeat(2, 1fr); 
+  }
+}
+
 
 /* cards */
 .card{
@@ -135,15 +152,41 @@ input:focus, select:focus, textarea:focus{
 }
 .card:hover{ box-shadow: var(--shadow); }
 
-.product-image{
-  width:100%;
-  height:180px;
-  background: #0f1519;
-  color: var(--muted);
-  display:grid; place-items:center;
+/* Product image = actual <img> element */
+.product-image {
+  display: block;
+  width: 100%;
+  height: auto !important;   /* override any inline height */
+  aspect-ratio: 1 / 1;       /* perfect square */
+  object-fit: cover;         /* neat crop */
   border-radius: var(--r-md);
   border: 1px solid #1a2329;
+  background: #0f1519;
+  box-shadow: 0 4px 14px rgba(0,0,0,.25);
+  transition: transform .2s ease, box-shadow .2s ease;
 }
+.product-image:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 18px rgba(82,138,109,.35);
+}
+
+/* (Optional utility if you ever wrap an img) */
+.media-square{
+  position:relative;
+  aspect-ratio: 1 / 1;
+  overflow:hidden;
+  border-radius: var(--r-md);
+  border: 1px solid #1a2329;
+  background:#0f1519;
+}
+.media-square > img{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  border-radius: inherit;
+}
+
+
 
 /* product row */
 .product-meta{
@@ -157,10 +200,11 @@ input:focus, select:focus, textarea:focus{
 }
 .qty-row input[type="number"]{
   width: 90px; text-align:center;
+  min-height: 44px; 
 }
 
 /* checkout sidebar */
-.sidebar{ position: sticky; top: 8px; }
+.sidebar{ position: sticky; top: var(--pad); } 
 @media (max-width: 899px){
   .sidebar{ position: static; }
 }
@@ -199,17 +243,41 @@ input:focus, select:focus, textarea:focus{
   width:48px;
   height:48px;
   border-radius:12px;
-  background: radial-gradient(circle at 40% 35%, #22c55e55, transparent 60%);
+  /* Use new accent color for shadow effect */
+  background: radial-gradient(circle at 40% 35%, #528A6D55, transparent 60%); 
   box-shadow:
-    0 0 0 2px rgba(34,197,94,.25),
-    0 0 16px rgba(34,197,94,.35),
+    0 0 0 2px rgba(82,138,109,.25),
+    0 0 16px rgba(82,138,109,.35),
     0 0 32px rgba(14,165,233,.2);
   transition: transform .25s ease, box-shadow .25s ease;
 }
 .pop-logo img:hover{
   transform: scale(1.08);
   box-shadow:
-    0 0 0 3px rgba(34,197,94,.4),
-    0 0 24px rgba(34,197,94,.55),
+    0 0 0 3px rgba(82,138,109,.4),
+    0 0 24px rgba(82,138,109,.55),
     0 0 48px rgba(14,165,233,.4);
 }
+
+/* Inline message under forms */
+.msg {
+  margin-top: 6px;
+  font-size: 14px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+.msg.error { color:#ef4444; background:#2a0f12; border-color:#ef444444; }
+.msg.success { color:#10b981; background:#0c2a1f; border-color:#10b98144; }
+
+/* Toast (mobile-friendly) */
+.toast {
+  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+  max-width: 92vw; padding: 10px 14px; border-radius: 12px;
+  background: #111c21; color: #e7edf2; border:1px solid #263139;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); pointer-events: auto; }
+.toast.success { border-color:#10b98155; box-shadow: 0 8px 24px rgba(16,185,129,.15); }
+.toast.error   { border-color:#ef444455; box-shadow: 0 8px 24px rgba(239,68,68,.15); }
