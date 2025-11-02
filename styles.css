@@ -280,4 +280,8 @@ input:focus, select:focus, textarea:focus{
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); pointer-events: auto; }
 .toast.success { border-color:#10b98155; box-shadow: 0 8px 24px rgba(16,185,129,.15); }
+<<<<<<< HEAD
 .toast.error   { border-color:#ef444455; box-shadow: 0 8px 24px rgba(239,68,68,.15); }
+=======
+.toast.error   { border-color:#ef444455; box-shadow: 0 8px 24px rgba(239,68,68,.15); }
+>>>>>>> 3aa03f6 (MAJOR UPDATE)
