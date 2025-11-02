@@ -5,20 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Zen &amp; Sip — Matcha Shop</title>
 
-  <!-- Fonts (optional but nice) -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
-  <!-- Your theme stylesheet from the last message -->
   <link rel="stylesheet" href="./styles.css"/>
 
-  <!-- Basic SEO/Share -->
-  <meta name="theme-color" content="#22c55e">
+  <meta name="theme-color" content="#768064">
   <meta name="description" content="Fresh, made-to-order matcha from Zen &amp; Sip."/>
 </head>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
 <body>
   <div class="container">
 
-    <!-- Top bar -->
     <header class="topbar">
       <div class="logo pop-logo">
         <img src="./assets/logo.png" alt="Zen & Sip logo"/>
@@ -31,24 +30,17 @@
       </nav>
     </header>
 
-    <!-- Catalog header -->
     <h2 class="row" style="gap:8px;margin:6px 0 10px">
       <span>Catalog</span>
       <span id="statusBadge" class="badge" aria-live="polite">loading…</span>
     </h2>
 
-    <!-- Main layout: products + checkout -->
     <main class="layout" role="main">
-      <!-- Products grid -->
       <section aria-label="Products">
         <div id="catalog" class="grid" aria-live="polite">
-          <!-- Cards injected by app.js (renderCatalog) -->
-          <!-- Each product card uses:
-               .card, .product-image, .product-meta, .price, .qty-row -->
-        </div>
+          </div>
       </section>
 
-      <!-- Checkout sidebar -->
       <aside class="sidebar" aria-label="Checkout">
         <div class="card stack">
           <h3 style="margin:0">Checkout</h3>
@@ -59,14 +51,14 @@
       </aside>
     </main>
 
-    <!-- Footer -->
     <footer class="center muted" style="margin-top:18px">
       Fresh, made-to-order matcha • Zen &amp; Sip
     </footer>
   </div>
 
-  <!-- Config (API URL + secret) then your app logic -->
-  <script src="./config.js"></script>
-  <script src="./app.js"></script>
+  <script defer src="./config.js?v=13"></script>
+  <script defer src="./app.js?v=13"></script>
+
+
 </body>
 </html>
