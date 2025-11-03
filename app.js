@@ -1,290 +1,5 @@
-<<<<<<< HEAD
-/* ===========================
-   Zen & Sip — UI Theme (mobile-first)
-   =========================== */
-
-:root{
-  /* Updated Palette inspired by the Earthy Green/Matcha image 
-    All colors checked for WCAG AA contrast against main --bg and --text
-  */
-  --bg: #0b0f12;           /* Primary Background (Dark) */
-  --surface: #12181c;      /* Main Surface/Card Background */
-  --surface-2: #192127;    /* Secondary Surface (Slightly lighter dark) */
-  --muted: #A3ADB8;        /* Muted Text (Improved readability from original #8b98a5) */
-  --text: #e7edf2;         /* Primary Text (Light) */
-
-  --accent: #528A6D;       /* Earthy/Matcha Green (Primary action color - Cypress/Moss blend) */
-  --accent-text: #E7EDF2;  /* Light text color for the accent button */
-  --accent-2: #38BDFC;     /* Brighter Cyan/Blue (Secondary action/info color) */
-  --danger: #ef4444;
-
-  /* radii and spacing */
-  --r-sm: 10px;
-  --r-md: 14px;
-  --r-lg: 18px;
-  --pad: 12px;
-  --gap: 12px;
-
-  /* sizing */
-  --tap: 44px;             /* minimum tap target */
-  --shadow: 0 6px 20px rgba(0,0,0,.30);
-  --shadow-soft: 0 4px 12px rgba(0,0,0,.22);
-}
-
-/* base */
-*{ box-sizing: border-box; }
-html, body{ height:100%; }
-body{
-  margin:0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-  line-height: 1.45;
-}
-
-img{ max-width:100%; display:block; }
-
-.container{
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 16px;
-}
-
-/* header / topbar */
-.header,.topbar{
-  display:flex;
-  justify-content: space-between;
-  align-items:center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.logo{
-  display:flex; align-items:center; gap:10px;
-  font-weight: 800;
-}
-.logo img{ width:28px; height:28px; border-radius: 6px; }
-
-.badge{
-  /* Use accent color for status badge */
-  background: rgba(82,138,109,.12); /* Based on new --accent */
-  color: #a2cdb3; 
-  border: 1px solid rgba(82,138,109,.35);
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-}
-
-/* buttons */
-button,.btn{
-  appearance:none;
-  border:none;
-  border-radius: var(--r-md);
-  padding: 10px 14px;
-  background: var(--accent);
-  color:var(--accent-text); 
-  font-weight:700;
-  cursor:pointer;
-  transition: transform .06s ease, filter .2s ease, background .2s ease;
-  min-height: var(--tap); 
-  line-height: 1.2; 
-}
-button:hover{ filter: brightness(1.1); } 
-button:active{ transform: translateY(1px) scale(.99); }
-
-button.secondary{ background: var(--accent-2); color: #04202b; }
-button.ghost{ background: var(--surface-2); color: var(--text); }
-button.danger{ background: var(--danger); color:#fff; }
-
-/* inputs */
-input, select, textarea{
-  width:100%;
-  min-height: var(--tap);
-  padding: 10px 12px;
-  border: 1px solid #253038;
-  border-radius: var(--r-md);
-  background: #0f1519;
-  color: var(--text);
-  outline: none;
-  transition: border-color .2s ease, box-shadow .2s ease;
-}
-input:focus, select:focus, textarea:focus{
-  border-color: rgba(82,138,109,.55); 
-  box-shadow: 0 0 0 3px rgba(82,138,109,.15);
-}
-
-/* layout */
-.layout{
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--gap);
-}
-@media (min-width: 900px){
-  .layout{
-    grid-template-columns: 1fr 360px;
-  }
-}
-
-.grid{
-  display:grid;
-  grid-template-columns: 1fr; 
-  gap: var(--gap);
-}
-/* Product Card Sizing: Set max two large columns for shop page */
-@media (min-width: 560px){
-  .grid.product-list { 
-    grid-template-columns: repeat(2, 1fr); 
-  }
-}
-@media (min-width: 900px){
-  .grid.product-list {
-    grid-template-columns: repeat(2, 1fr); 
-  }
-}
-
-
-/* cards */
-.card{
-  background: var(--surface);
-  border: 1px solid #1a2329;
-  border-radius: var(--r-lg);
-  padding: var(--pad);
-  box-shadow: var(--shadow-soft);
-}
-.card:hover{ box-shadow: var(--shadow); }
-
-/* Product image = actual <img> element */
-.product-image {
-  display: block;
-  width: 100%;
-  height: auto !important;   /* override any inline height */
-  aspect-ratio: 1 / 1;       /* perfect square */
-  object-fit: cover;         /* neat crop */
-  border-radius: var(--r-md);
-  border: 1px solid #1a2329;
-  background: #0f1519;
-  box-shadow: 0 4px 14px rgba(0,0,0,.25);
-  transition: transform .2s ease, box-shadow .2s ease;
-}
-.product-image:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 18px rgba(82,138,109,.35);
-}
-
-/* (Optional utility if you ever wrap an img) */
-.media-square{
-  position:relative;
-  aspect-ratio: 1 / 1;
-  overflow:hidden;
-  border-radius: var(--r-md);
-  border: 1px solid #1a2329;
-  background:#0f1519;
-}
-.media-square > img{
-  position:absolute; inset:0;
-  width:100%; height:100%;
-  object-fit:cover;
-  border-radius: inherit;
-}
-
-
-
-/* product row */
-.product-meta{
-  display:flex; justify-content:space-between; align-items:center; gap:8px;
-  margin: 6px 0 2px;
-}
-.price{ font-weight: 800; }
-
-.qty-row{
-  display:flex; gap:8px; align-items:center;
-}
-.qty-row input[type="number"]{
-  width: 90px; text-align:center;
-  min-height: 44px; 
-}
-
-/* checkout sidebar */
-.sidebar{ position: sticky; top: var(--pad); } 
-@media (max-width: 899px){
-  .sidebar{ position: static; }
-}
-
-.stack{ display:grid; gap: 10px; }
-.row{ display:flex; gap: 8px; align-items:center; }
-.row.wrap{ flex-wrap: wrap; }
-
-.summary{
-  border-top: 1px dashed #263139;
-  padding-top: 10px;
-  display:grid; gap: 6px;
-}
-.total{ display:flex; justify-content:space-between; font-weight:800; font-size: 1.05rem; }
-
-/* cart badge */
-.cartBadge{
-  background: var(--accent-2);
-  color:#001017;
-  border-radius: 999px;
-  padding: 2px 8px;
-  font-weight: 800;
-  margin-left: 6px;
-  font-size: 12px;
-}
-
-/* labels & helpers */
-.muted{ color: var(--muted); }
-
-/* utility */
-.center{ text-align:center; }
-.hidden{ display:none !important; }
-
-/* --- Pop Logo Effect --- */
-.pop-logo img{
-  width:48px;
-  height:48px;
-  border-radius:12px;
-  /* Use new accent color for shadow effect */
-  background: radial-gradient(circle at 40% 35%, #528A6D55, transparent 60%); 
-  box-shadow:
-    0 0 0 2px rgba(82,138,109,.25),
-    0 0 16px rgba(82,138,109,.35),
-    0 0 32px rgba(14,165,233,.2);
-  transition: transform .25s ease, box-shadow .25s ease;
-}
-.pop-logo img:hover{
-  transform: scale(1.08);
-  box-shadow:
-    0 0 0 3px rgba(82,138,109,.4),
-    0 0 24px rgba(82,138,109,.55),
-    0 0 48px rgba(14,165,233,.4);
-}
-
-/* Inline message under forms */
-.msg {
-  margin-top: 6px;
-  font-size: 14px;
-  padding: 6px 8px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-}
-.msg.error { color:#ef4444; background:#2a0f12; border-color:#ef444444; }
-.msg.success { color:#10b981; background:#0c2a1f; border-color:#10b98144; }
-
-/* Toast (mobile-friendly) */
-.toast {
-  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
-  max-width: 92vw; padding: 10px 14px; border-radius: 12px;
-  background: #111c21; color: #e7edf2; border:1px solid #263139;
-  box-shadow: 0 8px 24px rgba(0,0,0,.35);
-  z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); pointer-events: auto; }
-.toast.success { border-color:#10b98155; box-shadow: 0 8px 24px rgba(16,185,129,.15); }
-.toast.error   { border-color:#ef444455; box-shadow: 0 8px 24px rgba(239,68,68,.15); }
-=======
 /* ============================================================
-   Zen & Sip — Shop (absolute image paths; PNG only)
+   Zen & Sip — Shop (forced product images; PNG only)
    ============================================================ */
 
 /* global SHOP_CONFIG */
@@ -296,23 +11,14 @@ const ALLOWED_MIME = new Set([
   "image/jpeg","image/png","image/webp","image/heic","application/pdf"
 ]);
 
-/* ---------- Build an absolute URL from a project-relative path ---------- */
-function abs(path){
-  // base like: http://127.0.0.1:5500/zen-and-sip-starter-shop/
-  const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
-  return new URL(path.replace(/^\.?\//, ""), base).href;
-}
-
-/* ---------- Map product names -> exact PNG path (then absolutize) ---------- */
-function imageUrlFor(name = ""){
-  const n = String(name).trim().toLowerCase();
-
-  if (n.includes("suizawa")) return abs("assets/product/suizawa.png");
-  if (n.includes("okuunmo")) return abs("assets/product/okuunmo.png");
-  // add more when ready:
-  // if (n.includes("yamabuki")) return abs("assets/product/yamabuki.png");
-
-  return abs("assets/sample-product.jpg");
+/* ---------- Map product names -> exact PNG path ---------- */
+function forceImagePath(name = "") {
+  const n = String(name).trim().toLowerCase();   // trims trailing spaces
+  if (n.includes("suizawa")) return "assets/product/suizawa.png";
+  if (n.includes("okuunmo")) return "assets/product/okuunmo.png";
+  // add more here when you have photos:
+  // if (n.includes("yamabuki")) return "assets/product/yamabuki.png";
+  return "assets/sample-product.jpg";
 }
 
 /* ---------- State ---------- */
@@ -329,7 +35,7 @@ function $(q){ return document.querySelector(q); }
 function currency(v){ return `₱${(Number(v)||0).toLocaleString()}`; }
 
 /* ---------- API helper ---------- */
-async function apiFetch(url, opts = {}){
+async function apiFetch(url, opts = {}) {
   const joiner = url.includes("?") ? "&" : "?";
   const withSecret = `${url}${joiner}secret=${encodeURIComponent(SECRET)}`;
 
@@ -352,12 +58,11 @@ async function refresh(){
   try{
     const data = await apiFetch(`${API}?action=products`);
 
-    // Force absolute image_url for each product
-    state.products = (data.items || []).map(p => ({
-      ...p,
-      name: String(p.name || "").trim(), // trims trailing spaces from sheet
-      image_url: imageUrlFor(p.name)
-    }));
+    // Force image_url per product (PNG paths above)
+    state.products = (data.items || []).map(p => {
+      const img = forceImagePath(p.name);
+      return { ...p, image_url: img };
+    });
 
     renderCatalog();
     $("#statusBadge") && ($("#statusBadge").textContent = `loaded ${state.products.length}`);
@@ -380,20 +85,13 @@ function renderCatalog(){
 
   root.innerHTML = state.products.map(p => {
     const lowStock = Number(p.stock) <= 2;
-    const img = p.image_url;
 
     return `
       <div class="card" role="article" aria-label="${p.name}">
-        <img
-          class="product-image"
-          loading="lazy"
-          src="${img}"
-          alt="${p.name}"
-          style="display:block;width:100%;height:180px;object-fit:cover;border-radius:10px"
-          onerror="this.onerror=null;this.src='${abs("assets/sample-product.jpg")}';"
-        />
+        <div class="media-square">
+          <img class="product-image" loading="lazy" src="${p.image_url}" alt="${p.name}">
+        </div>
         <h3 style="margin:8px 0 4px">${p.name}</h3>
-
         <div class="row wrap" style="justify-content:space-between">
           <div class="muted">
             Stock: ${p.stock}
@@ -539,11 +237,11 @@ function renderCheckoutPanel(forceOpen=false){
     <div class="stack" style="margin-top:10px">
       <div class="row wrap">
         <div class="card" style="flex:1;text-align:center">
-          <img src="${abs("assets/qr-gcash.png")}" alt="GCash QR" style="width:100%;max-width:220px;border-radius:8px"/>
+          <img src="assets/qr-gcash.png" alt="GCash QR" style="width:100%;max-width:220px;border-radius:8px"/>
           <div class="muted">GCash</div>
         </div>
         <div class="card" style="flex:1;text-align:center">
-          <img src="${abs("assets/qr-gotyme.jpg")}" alt="GoTyme QR" style="width:100%;max-width:220px;border-radius:8px"/>
+          <img src="assets/qr-gotyme.jpg" alt="GoTyme QR" style="width:100%;max-width:220px;border-radius:8px"/>
           <div class="muted">GoTyme</div>
         </div>
       </div>
@@ -749,4 +447,3 @@ function toast(text, type="success"){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=>{ el.className = "toast"; }, 2800);
 }
->>>>>>> 3aa03f6 (MAJOR UPDATE)

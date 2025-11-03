@@ -153,18 +153,16 @@ input:focus, select:focus, textarea:focus{
 .card:hover{ box-shadow: var(--shadow); }
 
 /* Product image = actual <img> element */
-.product-image {
-  display: block;
-  width: 100%;
-  height: auto !important;   /* override any inline height */
-  aspect-ratio: 1 / 1;       /* perfect square */
-  object-fit: cover;         /* neat crop */
-  border-radius: var(--r-md);
-  border: 1px solid #1a2329;
-  background: #0f1519;
-  box-shadow: 0 4px 14px rgba(0,0,0,.25);
-  transition: transform .2s ease, box-shadow .2s ease;
+.product-image{
+  display:block;
+  width:100%;
+  aspect-ratio:1/1;   /* square */
+  object-fit:cover;   /* neat crop */
+  border-radius:var(--r-md);
 }
+
+
+/* optional hover (ilagay sa .media-square kung gusto mo sa frame) */
 .product-image:hover {
   transform: scale(1.02);
   box-shadow: 0 6px 18px rgba(82,138,109,.35);
@@ -172,21 +170,20 @@ input:focus, select:focus, textarea:focus{
 
 /* (Optional utility if you ever wrap an img) */
 .media-square{
-  position:relative;
-  aspect-ratio: 1 / 1;
-  overflow:hidden;
+  position: relative;
+  aspect-ratio: 1 / 1;   /* forces square slot */
+  overflow: hidden;
   border-radius: var(--r-md);
   border: 1px solid #1a2329;
-  background:#0f1519;
+  background: #0f1519;
 }
+
 .media-square > img{
-  position:absolute; inset:0;
-  width:100%; height:100%;
-  object-fit:cover;
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;         /* fills neatly */
   border-radius: inherit;
 }
-
-
 
 /* product row */
 .product-meta{
@@ -280,8 +277,4 @@ input:focus, select:focus, textarea:focus{
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); pointer-events: auto; }
 .toast.success { border-color:#10b98155; box-shadow: 0 8px 24px rgba(16,185,129,.15); }
-<<<<<<< HEAD
 .toast.error   { border-color:#ef444455; box-shadow: 0 8px 24px rgba(239,68,68,.15); }
-=======
-.toast.error   { border-color:#ef444455; box-shadow: 0 8px 24px rgba(239,68,68,.15); }
->>>>>>> 3aa03f6 (MAJOR UPDATE)
