@@ -241,7 +241,7 @@ function renderCheckoutPanel(forceOpen=false){
           <div class="muted">GCash</div>
         </div>
         <div class="card" style="flex:1;text-align:center">
-          <img src="assets/qr-gotyme.jpg" alt="GoTyme QR" style="width:100%;max-width:220px;border-radius:8px"/>
+          <img src="assets/qr-gotyme.JPG" alt="GoTyme QR" style="width:100%;max-width:220px;border-radius:8px"/>
           <div class="muted">GoTyme</div>
         </div>
       </div>
