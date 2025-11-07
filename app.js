@@ -84,12 +84,14 @@ function renderCatalog(){
   }
 
   root.innerHTML = state.products.map(p => {
-    const lowStock = Number(p.stock) <= 2;
+    const isSoldOut = Number(p.stock) <= 0;
+    const lowStock = !isSoldOut && Number(p.stock) <= 2;
 
     return `
-      <div class="card" role="article" aria-label="${p.name}">
-        <div class="media-square">
-          <img class="product-image" loading="lazy" src="${p.image_url}" alt="${p.name}">
+      <div class="card ${isSoldOut ? 'sold-out' : ''}" role="article" aria-label="${p.name}">
+        <div class="media-square" onclick="openProductModal('${p.id}')">
+          <img class="product-image ${isSoldOut ? 'grayscale' : ''}" loading="lazy" src="${p.image_url}" alt="${p.name}">
+          ${isSoldOut ? '<div class="overlay-label">Sold Out</div>' : ''}
         </div>
         <h3 style="margin:8px 0 4px">${p.name}</h3>
         <div class="row wrap" style="justify-content:space-between">
@@ -101,11 +103,15 @@ function renderCatalog(){
         </div>
 
         <div class="row" style="margin-top:8px">
-          <input type="number" min="1" max="${p.stock}" value="1" id="qty-${p.id}" aria-label="Quantity for ${p.name}">
-          <button class="btn" onclick="addToCart('${p.id}')" aria-label="Add ${p.name} to cart">Add</button>
+          <input type="number" min="1" max="${p.stock}" value="1" id="qty-${p.id}" aria-label="Quantity for ${p.name}" ${isSoldOut ? 'disabled' : ''}>
+          <button class="btn" onclick="addToCart('${p.id}')" aria-label="Add ${p.name} to cart" ${isSoldOut ? 'disabled' : ''}>
+            ${isSoldOut ? 'Unavailable' : 'Add'}
+          </button>
         </div>
       </div>
     `;
+
+
   }).join("");
 
   updateCartCount();
@@ -218,7 +224,7 @@ function renderCheckoutPanel(forceOpen=false){
 
     <p id="lalamoveNote" class="muted"
       style="display:${prev.courier==='LALAMOVE'?'block':'none'}; color:#ef4444; background:#2a0f12; border:1px solid #ef444455; padding:8px; border-radius:10px;">
-      For Lalamove orders, please message us on IG (<strong>@zenandsip</strong>) with your exact address and preferred pickup time. Shipping will be quoted separately.
+      For Lalamove orders, kindly check the email for the pickup address and instructions. Please be sure to message us on Instagram (<strong>@zennsip.ph</strong>) before proceeding with the pickup.
     </p>
 
     <div class="stack" style="margin-top:8px">
@@ -352,7 +358,7 @@ function fileToBase64(file){
   });
 }
 
-/* ---------- Finalize order ---------- */
+/* ---------- Finalize order (clean version) ---------- */
 async function finalizeOrder(){
   const buyer = {
     name: $("#name")?.value?.trim(),
@@ -361,20 +367,24 @@ async function finalizeOrder(){
     contact: $("#contact")?.value?.trim() || ""
   };
 
-  if(!buyer.name || !buyer.email || !buyer.address || !buyer.contact){
-    alert("Please fill in your name, email, address, and contact number.");
-    return;
-  }
+  // Validation
+  if(!buyer.name || !buyer.email || !buyer.address || !buyer.contact)
+    return toast("Please fill in your full name, email, address, and contact number.", "warning");
 
-  const fileField = document.getElementById("receiptFile");
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(buyer.email))
+    return toast("Please enter a valid email address.", "warning");
+
+  if(!/^\d{10,13}$/.test(buyer.contact.replace(/\D/g,"")))
+    return toast("Contact number must be 10–13 digits.", "warning");
+
+  const fileField = $("#receiptFile");
   const file = fileField?.files?.[0];
-  if(!file && !state.tempReceiptId){
-    alert("Please attach a receipt/proof of payment.");
-    return;
-  }
+  if(!file && !state.tempReceiptId)
+    return toast("Please attach a receipt/proof of payment.", "warning");
 
   const items = [...state.cart.values()].map(i=>({id:i.id, qty:i.qty}));
-  if(!items.length){ alert("Your cart is empty."); return; }
+  if(!items.length)
+    return toast("Your cart is empty.", "warning");
 
   const courier = $("#courier").value;
   const region  = $("#regionGroup").value;
@@ -382,10 +392,10 @@ async function finalizeOrder(){
   const shipping_fee = (courier==="LALAMOVE") ? 0 : null;
 
   const btn = $("#finalizeBtn");
-  btn.disabled = true; btn.textContent = "Placing…";
-  inlineMsg("", "info");
+  btn.disabled = true; 
+  btn.textContent = "Placing…";
 
-  try{
+  try {
     let receiptFileId = state.tempReceiptId;
     if(!receiptFileId && file){
       const b64 = await fileToBase64(file);
@@ -409,23 +419,29 @@ async function finalizeOrder(){
       courier, region_group: region
     };
 
-    const linkText = res.receipt_file_link ? `\nReceipt: ${res.receipt_file_link}` : "";
-    alert(`Order placed! ID: ${state.order.order_id}${linkText}`);
+    // Save buyer info for next visit
+    localStorage.setItem("zen_buyer", JSON.stringify(buyer));
 
+    // Success UI
+    toast("Order placed successfully!", "success");
+    showOrderSuccess(state.order.order_id);
+
+    // Clean up
     state.cart.clear();
     state.quote = null;
     state.tempReceiptId = null;
     state.tempReceiptName = null;
     if (fileField) fileField.value = "";
     renderCheckoutPanel();
-  }catch(err){
+  } catch(err) {
     console.error(err);
-    inlineMsg("Order failed: " + err.message, "error");
-    alert("Order failed: " + err.message);
-  }finally{
-    btn.disabled = false; btn.textContent = "Place Order";
+    toast("Order failed: " + err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Place Order";
   }
 }
+
 
 /* ---------- Misc ---------- */
 async function trackOrder(orderId){
@@ -440,10 +456,118 @@ function inlineMsg(text, type="error", id="formMsg"){
   if(text) el.scrollIntoView({behavior:"smooth", block:"nearest"});
 }
 let toastTimer;
-function toast(text, type="success"){
-  const el = document.getElementById("toast"); if(!el) return;
-  el.textContent = text || "";
-  el.className = `toast show ${type}`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>{ el.className = "toast"; }, 2800);
+function toast(message, type = "info") {
+  const toast = document.getElementById("toast") || (() => {
+    const el = document.createElement("div");
+    el.id = "toast";
+    document.body.appendChild(el);
+    return el;
+  })();
+
+  toast.className = `toast show ${type}`;
+  toast.textContent = message;
+
+  setTimeout(() => toast.classList.remove("show"), 3500);
 }
+
+function showOrderSuccess(orderId){
+  const backdrop = document.createElement("div");
+  backdrop.className = "modal-backdrop";
+  backdrop.innerHTML = `
+    <div class="modal modal-sm" role="dialog">
+      <h2>Order Confirmed 🎉</h2>
+      <p>Your order has been placed successfully!</p>
+      <p><strong>Order ID:</strong> ${orderId}</p>
+      <p>We’ve sent a confirmation to your email.</p>
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">OK</button>
+    </div>`;
+  document.body.appendChild(backdrop);
+}
+
+
+
+function openProductModal(id) {
+  const product = state.products.find(x => String(x.id) === String(id));
+  if (!product) return;
+
+  const isSoldOut = Number(product.stock) <= 0;
+  const lowStock  = !isSoldOut && Number(product.stock) <= 2;
+
+  const backdrop = document.createElement("div");
+  backdrop.className = "modal-backdrop";
+  backdrop.innerHTML = `
+    <div class="modal modal-xl" role="dialog" aria-modal="true" aria-labelledby="modalTitle-${product.id}">
+      <button class="modal-close" aria-label="Close" onclick="this.closest('.modal-backdrop').remove()">×</button>
+
+      <div class="modal-grid">
+        <!-- LEFT: big image -->
+        <div class="modal-media">
+          <img src="${product.image_url}" alt="${product.name}">
+        </div>
+
+        <!-- RIGHT: content -->
+        <div class="modal-body">
+          <h2 id="modalTitle-${product.id}" class="modal-title">${product.name}</h2>
+
+          <div class="modal-meta v">
+            <div class="price">${currency(product.price)}</div>
+            <div class="stock ${isSoldOut ? 'sold' : lowStock ? 'low' : ''}">
+              Stock: ${product.stock}
+            </div>
+          </div>
+
+
+          <div class="modal-actions right">
+  
+            <button class="btn" onclick="addToCartFromModal('${product.id}')" ${isSoldOut ? "disabled" : ""}>
+              ${isSoldOut ? "Sold out" : "Add to cart"}
+            </button>
+          </div>
+
+          <div class="modal-sep"></div>
+
+          <div class="modal-desc-block">
+            <h4 class="modal-subtitle">${product.name} Matcha</h4>
+            <p class="modal-desc">${product.description || "No description available."}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // close when clicking outside
+  backdrop.addEventListener("click", (e) => { if (e.target === backdrop) backdrop.remove(); });
+  document.body.appendChild(backdrop);
+}
+
+// helper: +/− buttons
+function stepQty(id, delta){
+  const el = document.getElementById(`mqty-${id}`);
+  if(!el) return;
+  const max = Number(el.getAttribute("max") || 1);
+  const min = Number(el.getAttribute("min") || 1);
+  let v = Number(el.value || 1) + delta;
+  v = Math.max(min, Math.min(max, v));
+  el.value = v;
+}
+
+// helper: add to cart from modal
+function addToCartFromModal(id){
+  const qty = Number(document.getElementById(`mqty-${id}`)?.value || 1);
+  const mainQty = document.getElementById(`qty-${id}`); // sync with card if present
+  if (mainQty) mainQty.value = qty;
+  addToCart(id);
+  document.querySelector(".modal-backdrop")?.remove();
+  toast("Added to cart");
+}
+
+// helper: render simple bullets if description contains lines
+function renderDesc(text){
+  const t = String(text || "").trim();
+  if(!t) return `<p class="modal-desc muted">No description available.</p>`;
+  // Split on line breaks or • and build bullets when appropriate
+  const lines = t.split(/\n|•/).map(s=>s.trim()).filter(Boolean);
+  if (lines.length <= 1) return `<p class="modal-desc">${t}</p>`;
+  return `<ul class="modal-list">` + lines.map(l=>`<li>${l}</li>`).join("") + `</ul>`;
+}
+
