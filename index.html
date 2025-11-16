@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Zen &amp; Sip — Matcha</title>
+  <title>Zen &amp; Sip — Premium Matcha</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css"/>
@@ -15,89 +15,78 @@
       justify-content: space-between;
       align-items:center;
       gap: 10px;
-      /* Remove bottom margin from topbar to let the hero section sit higher */
+      /* Adjusted padding: Mas malinis na topbar */
+      padding: 20px 0 0; 
     }
     .hero{
-      padding: 0 16px 24px; /* Adjusted padding top/bottom */
+      padding: 0 16px 40px; 
       text-align: center;
-      /* Background is now based on the main --bg color */
       background: var(--bg);
       color: var(--text);
     }
-    /* Large, bold title similar to the reference image */
+    /* Large, bold title */
     .hero h1{
       margin: 10px 0 0; 
-      font-size: clamp(40px, 12vw, 80px); /* Much larger text */
+      font-size: clamp(40px, 12vw, 80px); 
       font-weight: 900;
-      line-height: 0.85; /* Tighten line height for impact */
-      letter-spacing: -2px;
+      line-height: 0.9;
       text-transform: uppercase;
+      color: var(--olive-deep);
     }
     .hero h2{
-      margin: 0 0 8px;
-      font-size: clamp(16px, 4vw, 24px);
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 4px; /* Spacing out the sub-headline */
-      color: var(--muted);
+        font-size: 18px;
+        margin: 0;
+        color: var(--muted);
+        letter-spacing: 1px;
     }
     .hero p{
       max-width: 600px;
-      margin: 0 auto 24px; /* Center the description */
-      color: var(--muted);
-      font-size: 14px;
+      margin: 15px auto 25px;
+      font-size: 18px;
+      line-height: 1.5;
     }
-    
     .hero-image-frame{
-      /* The main feature image block */
+      /* Ensure the hero image is contained */
       width: 100%;
-      max-width: 800px;
-      margin: 0 auto 30px;
-      border-radius: var(--r-md);
+      max-width: 500px; /* Limit size on desktop */
+      margin: 20px auto 30px;
+      border-radius: 12px;
       overflow: hidden;
-      border: 3px solid var(--surface-2); /* A slight border for definition */
-      box-shadow: var(--shadow);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
     .hero-image-frame img{
-        display: block;
-        width: 100%;
-        height: auto;
-        aspect-ratio: 16 / 10; /* A cinematic aspect ratio for the hero image */
-        object-fit: cover;
+      width: 100%;
+      height: auto;
+      display: block;
+      /* Gawing parang portrait ang image sa desktop */
+      aspect-ratio: 4 / 3; 
+      object-fit: cover;
     }
-
+    @media (min-width: 768px){
+        .hero-image-frame img{
+            aspect-ratio: 16 / 9; 
+        }
+    }
     .note{
-      color: var(--muted); /* Uses Cedar color */
-      font-size: 13px;
-      margin-top: 24px; /* More space for CTA */
+      margin-top: 12px;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.5px;
     }
-
-    .gallery{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:var(--gap);
-      margin-top:12px;
+    .section{
+        padding: 40px 0;
+        text-align: center;
     }
-    @media (min-width:720px){
-      .gallery{grid-template-columns:repeat(4,1fr);}
+    .section h2{
+        margin-bottom: 24px;
     }
-    .gallery img{
-      width:100%;height:180px;object-fit:cover;
-      border-radius:var(--r-md);
-      border:1px solid var(--surface);
-      background:var(--surface);
-    }
-    .section{margin-top:24px; text-align: center;}
-    .section h2 {font-size: 1.8rem; margin-bottom: 16px;}
-    .footer{text-align:center;color:var(--muted);margin-top:24px;}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:800;}
-    .brand img{width:28px;height:28px;border-radius:6px;}
   </style>
 </head>
 <body>
   <div class="container">
     <header class="header-home">
-      <div class="logo pop-logo">
+      <div class="logo">
         <img src="./assets/logo.png" alt="Zen & Sip logo"/>
       </div>
       <nav class="row">
@@ -114,24 +103,32 @@
         <img src="./assets/MAIN.jpg" alt="A perfect bowl of matcha">
       </div>
 
-      <a href="./shop.html" class="btn" style="min-width: 200px;">Shop the Collection</a>
+      <a href="./shop.html" class="btn primary" style="min-width: 240px; font-size: 18px; padding: 16px 30px;">Shop the Collection</a>
       <div class="note">Fresh batches weekly • Only available here</div>
     </section>
 
     <section class="section">
       <h2>Your Zen Moments</h2>
       <div class="gallery">
-        <img src="./assets/can.jpg" alt="User submitted matcha latte">
-        <img src="./assets/glass.jpg" alt="User submitted hot matcha">
-        <img src="./assets/try.jpg" alt="Matcha and pastry">
-        <img src="./assets/not-so-micro.PNG" alt="Matcha whisking">
+        <div class="gallery-item-frame">
+          <img src="./assets/can.jpg" alt="User submitted matcha latte">
+        </div>
+        <div class="gallery-item-frame">
+          <img src="./assets/glass.jpg" alt="User submitted hot matcha">
+        </div>
+        <div class="gallery-item-frame">
+          <img src="./assets/try.jpg" alt="Matcha and pastry">
+        </div>
+        <div class="gallery-item-frame">
+          <img src="./assets/not-so-micro.PNG" alt="Matcha whisking">
+        </div>
       </div>
-      <p class="muted" style="margin-top: 16px; font-size: 14px;">Tag us @zennsip.ph to show your matcha!</p>
     </section>
 
-    <footer class="center muted" style="margin-top:24px; padding-bottom: 20px;">
-      Fresh, made-to-order matcha • Zen &amp; Sip
-    </footer>
   </div>
+
+  <footer class="container" style="padding: 20px 16px; text-align: center; border-top: 1px solid var(--surface-2);">
+    <p class="muted" style="font-size: 14px;">&copy; Zen & Sip. All rights reserved. | <a href="#" style="color:var(--accent);">Privacy</a></p>
+  </footer>
 </body>
 </html>

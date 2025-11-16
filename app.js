@@ -73,13 +73,12 @@ async function refresh(){
   }
 }
 
-function renderCatalog(){
+function renderCatalog() {
   const root = $("#catalog");
-  if(!root) return;
+  if (!root) return;
 
-  if(!state.products.length){
+  if (!state.products.length) {
     root.innerHTML = `<p class="muted">No active products.</p>`;
-    renderCheckoutPanel();
     return;
   }
 
@@ -88,30 +87,38 @@ function renderCatalog(){
     const lowStock = !isSoldOut && Number(p.stock) <= 2;
 
     return `
-      <div class="card ${isSoldOut ? 'sold-out' : ''}" role="article" aria-label="${p.name}">
-        <div class="media-square" onclick="openProductModal('${p.id}')">
-          <img class="product-image ${isSoldOut ? 'grayscale' : ''}" loading="lazy" src="${p.image_url}" alt="${p.name}">
-          ${isSoldOut ? '<div class="overlay-label">Sold Out</div>' : ''}
-        </div>
-        <h3 style="margin:8px 0 4px">${p.name}</h3>
-        <div class="row wrap" style="justify-content:space-between">
-          <div class="muted">
-            Stock: ${p.stock}
-            ${lowStock ? '<span class="badge" style="margin-left:6px">few left</span>' : ''}
-          </div>
-          <div class="price">${currency(p.price)}</div>
-        </div>
+      <div class="product-card" role="article" aria-label="${p.name}">
+        
+        <img class="product-card-image ${isSoldOut ? "grayscale" : ""}"
+             src="${p.image_url}"
+             alt="${p.name}"
+             onclick="openProductModal('${p.id}')">
 
-        <div class="row" style="margin-top:8px">
-          <input type="number" min="1" max="${p.stock}" value="1" id="qty-${p.id}" aria-label="Quantity for ${p.name}" ${isSoldOut ? 'disabled' : ''}>
-          <button class="btn" onclick="addToCart('${p.id}')" aria-label="Add ${p.name} to cart" ${isSoldOut ? 'disabled' : ''}>
-            ${isSoldOut ? 'Unavailable' : 'Add'}
-          </button>
+        <div class="product-card-body">
+
+          <h3 class="product-card-title">${p.name}</h3>
+
+          <div class="product-card-meta">
+            <span class="product-card-price">${currency(p.price)}</span>
+            <span class="product-card-stock ${isSoldOut ? "sold" : lowStock ? "low" : ""}">
+              ${isSoldOut ? "Sold Out" : `Stock: ${p.stock}`}
+            </span>
+          </div>
+
+          <div class="product-card-actions">
+            ${
+              isSoldOut
+                ? `<button class="btn" disabled>Unavailable</button>`
+                : `
+                <input type="number" min="1" max="${p.stock}" value="1" id="qty-${p.id}">
+                <button class="btn primary" onclick="addToCart('${p.id}')">Add</button>
+              `
+            }
+          </div>
+
         </div>
       </div>
     `;
-
-
   }).join("");
 
   updateCartCount();
@@ -162,92 +169,126 @@ function openCart(){ $("#checkoutPanel")?.scrollIntoView({behavior:"smooth"}); }
 /* ---------- Checkout (auto-quote) ---------- */
 function toggleLalamoveUI(){
   const courier = $("#courier")?.value || "JNT";
-  const regionWrap = $("#regionWrap");
-  const note = $("#lalamoveNote");
+  const regionWrap   = $("#regionWrap");
+  const note         = $("#lalamoveNote");
+  const addressBlock = $("#addressBlock");
+  const contactBlock = $("#contactBlock");
+
   const isLala = courier === "LALAMOVE";
-  if(regionWrap) regionWrap.style.display = isLala ? "none" : "";
-  if(note)       note.style.display       = isLala ? "block" : "none";
+
+  // Region + note
+  if (regionWrap) regionWrap.style.display = isLala ? "none" : "";
+  if (note)       note.style.display       = isLala ? "block" : "none";
+
+  // Address + contact hide/show
+  if (addressBlock) addressBlock.style.display = isLala ? "none" : "";
+  if (contactBlock) contactBlock.style.display = isLala ? "none" : "";
 }
-function renderCheckoutPanel(forceOpen=false){
+
+function renderCheckoutPanel(forceOpen = false) {
   const root = $("#checkoutPanel");
-  if(!root) return;
+  if (!root) return;
 
   const items = [...state.cart.values()];
-  if(!items.length){
-    state.quote = null; state.tempReceiptId = null; state.tempReceiptName = null;
+  if (!items.length) {
+    state.quote = null;
+    state.tempReceiptId = null;
+    state.tempReceiptName = null;
     root.innerHTML = `<p class="muted">Add items to your cart to begin.</p>`;
     return;
   }
 
   const prev = {
-    name:    $("#name")?.value || "",
-    email:   $("#email")?.value || "",
+    name: $("#name")?.value || "",
+    email: $("#email")?.value || "",
     address: $("#address")?.value || "",
     contact: $("#contact")?.value || "",
     courier: $("#courier")?.value || "JNT",
-    region:  $("#regionGroup")?.value || "NCR"
+    region: $("#regionGroup")?.value || "NCR"
   };
 
-  const cartLines = items.map(i=>`
-    <li style="margin:6px 0">
-      <div style="display:flex;justify-content:space-between;gap:8px">
-        <div>${i.name} <span class="muted">× ${i.qty}</span></div>
-        <strong>${currency(i.price*i.qty)}</strong>
+  const cartLines = items.map(i => `
+    <li class="mini-cart-line">
+      <div class="mini-cart-header">
+        <span class="mini-cart-title">${i.name}</span>
+        <span class="mini-cart-price">${currency(i.price * i.qty)}</span>
       </div>
-      <div class="row" style="margin-top:4px">
-        <button class="btn ghost" onclick="changeQty('${i.id}',-1)">-</button>
-        <input style="width:70px;text-align:center" type="number" min="0" max="${i.stock}" value="${i.qty}" onchange="setQty('${i.id}', this.value)">
-        <button class="btn ghost" onclick="changeQty('${i.id}',1)">+</button>
-        <div class="muted" style="margin-left:auto">left: ${i.stock}</div>
+      <div class="mini-cart-controls">
+        <button class="btn ghost btn-qty" onclick="changeQty('${i.id}', -1)">-</button>
+        <input
+          class="mini-cart-input"
+          type="number"
+          min="0"
+          max="${i.stock}"
+          value="${i.qty}"
+          onchange="setQty('${i.id}', this.value)"
+        />
+        <button class="btn ghost btn-qty" onclick="changeQty('${i.id}', 1)">+</button>
+        <span class="mini-cart-left muted">left: ${i.stock}</span>
       </div>
     </li>
   `).join("");
 
   root.innerHTML = `
-    <ul style="padding-left:18px;margin:0">${cartLines}</ul>
+    <ul class="mini-cart-list">
+      ${cartLines}
+    </ul>
 
     <div class="row wrap" style="margin-top:10px">
       <select id="courier">
-        <option value="JNT" ${prev.courier==='JNT'?'selected':''}>J&amp;T</option>
-        <option value="LALAMOVE" ${prev.courier==='LALAMOVE'?'selected':''}>Lalamove</option>
+        <option value="JNT" ${prev.courier === 'JNT' ? 'selected' : ''}>J&amp;T</option>
+        <option value="LALAMOVE" ${prev.courier === 'LALAMOVE' ? 'selected' : ''}>Lalamove</option>
       </select>
-      <span id="regionWrap" style="flex:1; ${prev.courier==='LALAMOVE'?'display:none;':''}">
+      <span id="regionWrap" style="flex:1; ${prev.courier === 'LALAMOVE' ? 'display:none;' : ''}">
         <select id="regionGroup">
-          <option value="NCR" ${prev.region==='NCR'?'selected':''}>NCR</option>
-          <option value="LUZON" ${prev.region==='LUZON'?'selected':''}>Luzon</option>
-          <option value="VISAYAS" ${prev.region==='VISAYAS'?'selected':''}>Visayas</option>
-          <option value="MINDANAO" ${prev.region==='MINDANAO'?'selected':''}>Mindanao</option>
-          <option value="ISLAND" ${prev.region==='ISLAND'?'selected':''}>Island</option>
+          <option value="NCR" ${prev.region === 'NCR' ? 'selected' : ''}>NCR</option>
+          <option value="LUZON" ${prev.region === 'LUZON' ? 'selected' : ''}>Luzon</option>
+          <option value="VISAYAS" ${prev.region === 'VISAYAS' ? 'selected' : ''}>Visayas</option>
+          <option value="MINDANAO" ${prev.region === 'MINDANAO' ? 'selected' : ''}>Mindanao</option>
+          <option value="ISLAND" ${prev.region === 'ISLAND' ? 'selected' : ''}>Island</option>
         </select>
       </span>
     </div>
 
     <p id="lalamoveNote" class="muted"
-      style="display:${prev.courier==='LALAMOVE'?'block':'none'}; color:#ef4444; background:#2a0f12; border:1px solid #ef444455; padding:8px; border-radius:10px;">
+      style="display:${prev.courier === 'LALAMOVE' ? 'block' : 'none'}; color:#ef4444; background:#2a0f12; border:1px solid #ef444455; padding:8px; border-radius:10px; margin-top:8px;">
       For Lalamove orders, kindly check the email for the pickup address and instructions. Please be sure to message us on Instagram (<strong>@zennsip.ph</strong>) before proceeding with the pickup.
     </p>
 
     <div class="stack" style="margin-top:8px">
       <input id="name" placeholder="Full name" value="${prev.name}">
       <input id="email" type="email" placeholder="Email" value="${prev.email}">
-      <textarea id="address" placeholder="Complete address" rows="2">${prev.address}</textarea>
-      <input id="contact" placeholder="Contact number" value="${prev.contact}">
+      <div id="addressBlock">
+        <textarea id="address" placeholder="Complete address" rows="2">${prev.address}</textarea>
+      </div>
+      <div id="contactBlock">
+        <input id="contact" placeholder="Contact number" value="${prev.contact}">
+      </div>
     </div>
 
-    <div class="summary">
-      <div style="display:flex;justify-content:space-between"><span>Subtotal</span><strong id="qSub">${currency(getCartSubtotal())}</strong></div>
-      <div style="display:flex;justify-content:space-between"><span>Shipping</span><strong id="qShip">—</strong></div>
-      <div class="total"><span>Total</span><strong id="qTot">—</strong></div>
-    </div>
+    <table class="summary-table">
+      <tr>
+        <td>Subtotal</td>
+        <td id="qSub">${currency(getCartSubtotal())}</td>
+      </tr>
+      <tr>
+        <td>Shipping</td>
+        <td id="qShip">—</td>
+      </tr>
+      <tr class="total">
+        <td>Total</td>
+        <td id="qTot">—</td>
+      </tr>
+    </table>
 
-    <div class="stack" style="margin-top:10px">
+    <div class="stack" style="margin-top:4px">
       <div class="row wrap">
-        <div class="card" style="flex:1;text-align:center">
-          <img src="assets/qr-gcash.png" alt="GCash QR" style="width:100%;max-width:220px;border-radius:8px"/>
+        <div class="card payment-card">
+          <img src="assets/qr-gcash.png" alt="GCash QR" class="payment-qr"/>
           <div class="muted">GCash</div>
         </div>
-        <div class="card" style="flex:1;text-align:center">
-          <img src="assets/qr-gotyme.JPG" alt="GoTyme QR" style="width:100%;max-width:220px;border-radius:8px"/>
+        <div class="card payment-card">
+          <img src="assets/qr-gotyme.JPG" alt="GoTyme QR" class="payment-qr"/>
           <div class="muted">GoTyme</div>
         </div>
       </div>
@@ -259,21 +300,26 @@ function renderCheckoutPanel(forceOpen=false){
           <option value="GCash">GCash</option>
           <option value="GoTyme">GoTyme</option>
         </select>
-        <button class="btn" id="finalizeBtn" onclick="finalizeOrder()">Place Order</button>
+        <button class="btn primary" id="finalizeBtn" onclick="finalizeOrder()">Place Order</button>
       </div>
       <p class="muted">Choose your receipt file — it will auto-upload. <span id="receiptStatus" class="muted"></span></p>
     </div>
   `;
 
-  $("#courier")?.addEventListener("change", () => { toggleLalamoveUI(); refreshQuote(); });
+  $("#courier")?.addEventListener("change", () => {
+    toggleLalamoveUI();
+    refreshQuote();
+  });
   $("#regionGroup")?.addEventListener("change", refreshQuote);
   $("#receiptFile")?.addEventListener("change", autoUploadReceipt);
 
   toggleLalamoveUI();
   refreshQuote();
 
-  if(forceOpen) root.scrollIntoView({behavior:"smooth"});
+  if (forceOpen) root.scrollIntoView({ behavior: "smooth" });
 }
+
+
 
 /* ---------- Quote ---------- */
 async function refreshQuote(){
@@ -358,6 +404,50 @@ function fileToBase64(file){
   });
 }
 
+function inferRegionFromAddress(address) {
+  const t = String(address || "").toLowerCase();
+  if (!t) return null;
+
+  const NCR = [
+    "quezon city", "qc", "mandaluyong", "makati", "taguig",
+    "pasig", "manila", "parañaque", "paranaque", "caloocan",
+    "las piñas", "las pinas", "valenzuela", "marikina",
+    "malabon", "navotas", "muntinlupa", "pasay", "pateros", "san juan"
+  ];
+
+  const LUZON = [
+    "pampanga", "bulacan", "cavite", "laguna", "batangas", "rizal",
+    "tarlac", "bataan", "zambales", "pangasinan", "isabela",
+    "nueva ecija", "benguet", "la union", "ilocos", "cagayan",
+    "abra", "aurora", "quezon province"
+  ];
+
+  const VISAYAS = [
+    "cebu", "bohol", "iloilo", "negros", "leyte", "samar",
+    "capiz", "aklan", "antique", "guimaras", "biliran", "siquijor"
+  ];
+
+  const MINDANAO = [
+    "davao", "zamboanga", "cagayan de oro", "gensan", "general santos",
+    "bukidnon", "cotabato", "butuan", "surigao", "misamis", "agusan",
+    "sultan kudarat"
+  ];
+
+  const ISLAND = [
+    "palawan", "siargao", "batanes", "camiguin", "siquijor island"
+  ];
+
+  const containsAny = (list) => list.some(k => t.includes(k));
+
+  if (containsAny(NCR)) return "NCR";
+  if (containsAny(LUZON)) return "LUZON";
+  if (containsAny(VISAYAS)) return "VISAYAS";
+  if (containsAny(MINDANAO)) return "MINDANAO";
+  if (containsAny(ISLAND)) return "ISLAND";
+
+  return null; // di ma-detect, ok lang, wag pilitin
+}
+
 /* ---------- Finalize order (clean version) ---------- */
 async function finalizeOrder(){
   const buyer = {
@@ -367,56 +457,100 @@ async function finalizeOrder(){
     contact: $("#contact")?.value?.trim() || ""
   };
 
-  // Validation
-  if(!buyer.name || !buyer.email || !buyer.address || !buyer.contact)
-    return toast("Please fill in your full name, email, address, and contact number.", "warning");
+  const courier = $("#courier").value;
+  const region  = $("#regionGroup")?.value || "NCR";
+  const payment_method = $("#paymentMethod").value;
+  const isLalamove = courier === "LALAMOVE";
 
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(buyer.email))
+  // ========= BASIC VALIDATION =========
+  // Name + email always required
+  if (!buyer.name || !buyer.email) {
+    return toast("Please fill in your full name and email.", "warning");
+  }
+
+  // Address + contact required ONLY for J&T
+  if (!isLalamove && (!buyer.address || !buyer.contact)) {
+    return toast("Please fill in your address and contact number for J&T shipping.", "warning");
+  }
+
+  // Valid email
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(buyer.email)) {
     return toast("Please enter a valid email address.", "warning");
+  }
 
-  if(!/^\d{10,13}$/.test(buyer.contact.replace(/\D/g,"")))
+  // Contact number format check – J&T lang
+  if (!isLalamove && buyer.contact && !/^\d{10,13}$/.test(buyer.contact.replace(/\D/g, ""))) {
     return toast("Contact number must be 10–13 digits.", "warning");
+  }
 
+  // Receipt required (same as before)
   const fileField = $("#receiptFile");
   const file = fileField?.files?.[0];
-  if(!file && !state.tempReceiptId)
+  if (!file && !state.tempReceiptId) {
     return toast("Please attach a receipt/proof of payment.", "warning");
+  }
 
-  const items = [...state.cart.values()].map(i=>({id:i.id, qty:i.qty}));
-  if(!items.length)
+  // Cart check
+  const items = [...state.cart.values()].map(i => ({ id: i.id, qty: i.qty }));
+  if (!items.length) {
     return toast("Your cart is empty.", "warning");
+  }
 
-  const courier = $("#courier").value;
-  const region  = $("#regionGroup").value;
-  const payment_method = $("#paymentMethod").value;
-  const shipping_fee = (courier==="LALAMOVE") ? 0 : null;
+  // ========= ADDRESS vs REGION CHECK (J&T only) =========
+  if (!isLalamove) {
+    const inferred = inferRegionFromAddress(buyer.address);
+    if (inferred && inferred !== region) {
+      return toast(
+        `Your address looks like it is in ${inferred}, but you selected ${region}. Please update the Region dropdown to match your address.`,
+        "warning"
+      );
+    }
+  }
+
+  // For Lalamove: shipping fee = 0, buyer will book pickup
+  const shipping_fee = isLalamove ? 0 : null;
 
   const btn = $("#finalizeBtn");
-  btn.disabled = true; 
+  btn.disabled = true;
   btn.textContent = "Placing…";
 
   try {
+    // Upload receipt if needed
     let receiptFileId = state.tempReceiptId;
-    if(!receiptFileId && file){
+    if (!receiptFileId && file) {
       const b64 = await fileToBase64(file);
       const up = await apiFetch(`${API}?action=uploadTempReceipt`, {
         method: "POST",
-        body: JSON.stringify({ base64: String(b64).split(",")[1], mimeType: file.type || "image/png", filename: file.name })
+        body: JSON.stringify({
+          base64: String(b64).split(",")[1],
+          mimeType: file.type || "image/png",
+          filename: file.name
+        })
       });
       receiptFileId = up.file_id;
     }
 
+    // Finalize order sa backend
     const res = await apiFetch(`${API}?action=finalizeOrder`, {
       method: "POST",
-      body: JSON.stringify({ items, buyer, payment_method, courier, region_group: region, shipping_fee, receipt_file_id: receiptFileId })
+      body: JSON.stringify({
+        items,
+        buyer,
+        payment_method,
+        courier,
+        region_group: region,
+        shipping_fee,
+        receipt_file_id: receiptFileId
+      })
     });
 
     state.order = {
       order_id: res.order_id,
-      subtotal: Number(res.subtotal||0),
-      shipping_fee: Number(res.shipping_fee||0),
-      total: Number(res.total||0),
-      courier, region_group: region
+      subtotal: Number(res.subtotal || 0),
+      shipping_fee: Number(res.shipping_fee || 0),
+      total: Number(res.total || 0),
+      courier,
+      region_group: region
     };
 
     // Save buyer info for next visit
@@ -433,14 +567,16 @@ async function finalizeOrder(){
     state.tempReceiptName = null;
     if (fileField) fileField.value = "";
     renderCheckoutPanel();
-  } catch(err) {
+  } catch (err) {
     console.error(err);
-    toast("Order failed: " + err.message, "error");
+    toast("Order failed: " + (err.message || err), "error");
   } finally {
     btn.disabled = false;
     btn.textContent = "Place Order";
   }
 }
+
+
 
 
 /* ---------- Misc ---------- */
@@ -478,7 +614,7 @@ function showOrderSuccess(orderId){
       <h2>Order Confirmed 🎉</h2>
       <p>Your order has been placed successfully!</p>
       <p><strong>Order ID:</strong> ${orderId}</p>
-      <p>We’ve sent a confirmation to your email.</p>
+      <p>We’ll send you a confirmation email once your order has been shipped.</p>
       <button class="btn" onclick="this.closest('.modal-backdrop').remove()">OK</button>
     </div>`;
   document.body.appendChild(backdrop);
@@ -487,58 +623,106 @@ function showOrderSuccess(orderId){
 
 
 function openProductModal(id) {
-  const product = state.products.find(x => String(x.id) === String(id));
+  const product = state.products.find(p => String(p.id) === String(id));
   if (!product) return;
 
   const isSoldOut = Number(product.stock) <= 0;
   const lowStock  = !isSoldOut && Number(product.stock) <= 2;
 
+  // multiple images support kung meron, else fallback sa image_url
+  const images = Array.isArray(product.images) && product.images.length
+    ? product.images
+    : [product.image_url];
+
   const backdrop = document.createElement("div");
   backdrop.className = "modal-backdrop";
-  backdrop.innerHTML = `
-    <div class="modal modal-xl" role="dialog" aria-modal="true" aria-labelledby="modalTitle-${product.id}">
-      <button class="modal-close" aria-label="Close" onclick="this.closest('.modal-backdrop').remove()">×</button>
 
-      <div class="modal-grid">
-        <!-- LEFT: big image -->
-        <div class="modal-media">
-          <img src="${product.image_url}" alt="${product.name}">
+  backdrop.innerHTML = `
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle-${product.id}">
+      
+      <div class="modal-header">
+        <h3 id="modalTitle-${product.id}">${product.name}</h3>
+        <button class="modal-close-btn" aria-label="Close"
+          onclick="this.closest('.modal-backdrop').remove()">×</button>
+      </div>
+
+      <div class="modal-product-layout">
+        
+        <!-- LEFT: image + thumbs -->
+        <div class="modal-product-image-section">
+          <img
+            id="modal-main-${product.id}"
+            class="modal-main-image"
+            src="${images[0]}"
+            alt="${product.name}"
+          />
+
+          ${images.length > 1 ? `
+          <div class="modal-image-thumbs">
+            ${images.map((src, index) => `
+              <button
+                type="button"
+                class="${index === 0 ? "active" : ""}"
+                data-modal-thumb="${product.id}"
+                onclick="changeModalImage('${product.id}', ${index}, '${src.replace(/'/g,"\\'")}')">
+                <img src="${src}" alt="${product.name} photo ${index + 1}">
+              </button>
+            `).join("")}
+          </div>` : ""}
         </div>
 
-        <!-- RIGHT: content -->
-        <div class="modal-body">
-          <h2 id="modalTitle-${product.id}" class="modal-title">${product.name}</h2>
+        <!-- RIGHT: info -->
+        <div class="modal-product-info-section">
 
           <div class="modal-meta v">
             <div class="price">${currency(product.price)}</div>
-            <div class="stock ${isSoldOut ? 'sold' : lowStock ? 'low' : ''}">
+            <div class="stock ${isSoldOut ? "sold" : lowStock ? "low" : ""}">
               Stock: ${product.stock}
             </div>
           </div>
 
-
           <div class="modal-actions right">
-  
-            <button class="btn" onclick="addToCartFromModal('${product.id}')" ${isSoldOut ? "disabled" : ""}>
+            <div class="qty-stepper">
+              <button type="button" class="btn ghost"
+                onclick="stepQty('${product.id}', -1)" ${isSoldOut ? "disabled" : ""}>-</button>
+
+              <input
+                id="mqty-${product.id}"
+                type="number"
+                min="1"
+                max="${product.stock}"
+                value="${isSoldOut ? 0 : 1}"
+                ${isSoldOut ? "disabled" : ""}
+              />
+
+              <button type="button" class="btn ghost"
+                onclick="stepQty('${product.id}', 1)" ${isSoldOut ? "disabled" : ""}>+</button>
+            </div>
+
+            <button class="btn primary"
+              onclick="addToCartFromModal('${product.id}')"
+              ${isSoldOut ? "disabled" : ""}>
               ${isSoldOut ? "Sold out" : "Add to cart"}
             </button>
           </div>
 
-          <div class="modal-sep"></div>
-
-          <div class="modal-desc-block">
-            <h4 class="modal-subtitle">${product.name} Matcha</h4>
-            <p class="modal-desc">${product.description || "No description available."}</p>
+          <div class="modal-body">
+            ${renderDesc(product.description)}
           </div>
+
         </div>
       </div>
     </div>
   `;
 
-  // close when clicking outside
-  backdrop.addEventListener("click", (e) => { if (e.target === backdrop) backdrop.remove(); });
+  // close when clicking outside the modal card
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) backdrop.remove();
+  });
+
   document.body.appendChild(backdrop);
 }
+
 
 // helper: +/− buttons
 function stepQty(id, delta){
@@ -560,6 +744,18 @@ function addToCartFromModal(id){
   document.querySelector(".modal-backdrop")?.remove();
   toast("Added to cart");
 }
+
+function changeModalImage(productId, index, src) {
+  const main = document.getElementById(`modal-main-${productId}`);
+  if (main && src) main.src = src;
+
+  const thumbs = document.querySelectorAll(`[data-modal-thumb="${productId}"]`);
+  thumbs.forEach((btn, i) => {
+    if (i === index) btn.classList.add("active");
+    else btn.classList.remove("active");
+  });
+}
+
 
 // helper: render simple bullets if description contains lines
 function renderDesc(text){
