@@ -281,8 +281,17 @@ function renderCheckoutPanel(forceOpen = false) {
       </tr>
     </table>
 
-    <div class="checkout-pay">
+        <div class="checkout-pay">
 
+      <!-- 1. Payment method dropdown on top -->
+      <div class="pay-method">
+        <select id="paymentMethod">
+          <option value="GCash">GCash</option>
+          <option value="GoTyme">GoTyme</option>
+        </select>
+      </div>
+
+      <!-- 2. QR codes side-by-side -->
       <div class="row wrap pay-qrs">
         <div class="card payment-card">
           <img src="assets/qr-gcash.png" alt="GCash QR" class="payment-qr"/>
@@ -294,21 +303,16 @@ function renderCheckoutPanel(forceOpen = false) {
         </div>
       </div>
 
-      <div class="row wrap pay-controls">
-        <div class="pay-file">
-          <input type="file" id="receiptFile" accept="image/*,application/pdf">
-          <p id="formMsg" class="msg" style="display:none"></p>
-        </div>
-        <div class="pay-method">
-          <select id="paymentMethod">
-            <option value="GCash">GCash</option>
-            <option value="GoTyme">GoTyme</option>
-          </select>
-        </div>
-        <div class="pay-button">
-          <button class="btn primary full" id="finalizeBtn" onclick="finalizeOrder()">Place Order</button>
-        </div>
+      <!-- 3. File upload -->
+      <div class="pay-file">
+        <input type="file" id="receiptFile" accept="image/*,application/pdf">
+        <p id="formMsg" class="msg" style="display:none"></p>
       </div>
+
+      <!-- 4. Place Order button at the bottom -->
+      <button class="btn primary full pay-submit" id="finalizeBtn" onclick="finalizeOrder()">
+        Place Order
+      </button>
 
       <p class="muted small-note">
         Choose your receipt file — it will auto-upload. <span id="receiptStatus" class="muted"></span>
@@ -420,32 +424,40 @@ function inferRegionFromAddress(address) {
   if (!t) return null;
 
   const NCR = [
-    "quezon city", "qc", "mandaluyong", "makati", "taguig",
-    "pasig", "manila", "parañaque", "paranaque", "caloocan",
-    "las piñas", "las pinas", "valenzuela", "marikina",
-    "malabon", "navotas", "muntinlupa", "pasay", "pateros", "san juan"
+    "quezon city", "qc", "mandaluyong", "makati", "taguig", "pasig", 
+    "manila", "parañaque", "paranaque", "caloocan", "las piñas", 
+    "las pinas", "valenzuela", "marikina", "malabon", "navotas", 
+    "muntinlupa", "pasay", "pateros", "san juan"
   ];
 
   const LUZON = [
     "pampanga", "bulacan", "cavite", "laguna", "batangas", "rizal",
     "tarlac", "bataan", "zambales", "pangasinan", "isabela",
-    "nueva ecija", "benguet", "la union", "ilocos", "cagayan",
-    "abra", "aurora", "quezon province"
+    "nueva ecija", "la union", "ilocos norte", "ilocos sur", "cagayan",
+    "benguet", "abra", "mountain province", "kalinga", "apayao", "ifugao",
+    "aurora", "nueva vizcaya", "quirino", "quezon province", "albay", 
+    "camarines norte", "camarines sur", "catanduanes", "masbate", "sorsogon",
+    "marinduque", "oriental mindoro", "occidental mindoro", "romblon", "batanes"
   ];
 
   const VISAYAS = [
-    "cebu", "bohol", "iloilo", "negros", "leyte", "samar",
-    "capiz", "aklan", "antique", "guimaras", "biliran", "siquijor"
+    "cebu", "cebu city", "bohol", "siquijor", "iloilo", "iloilo city", 
+    "negros occidental", "negros oriental", "guimaras", "aklan", "antique", "capiz",
+    "leyte", "southern leyte", "biliran", "samar", "eastern samar", "northern samar"
   ];
 
   const MINDANAO = [
-    "davao", "zamboanga", "cagayan de oro", "gensan", "general santos",
-    "bukidnon", "cotabato", "butuan", "surigao", "misamis", "agusan",
-    "sultan kudarat"
+    "davao del sur", "davao del norte", "davao oriental", "davao occidental", 
+    "davao de oro", "davao city", "gensan", "general santos", "cotabato city", 
+    "zamboanga del norte", "zamboanga del sur", "zamboanga sibugay", "zamboanga city", 
+    "cagayan de oro", "bukidnon", "misamis oriental", "misamis occidental", "lanao del norte", 
+    "camiguin", "agusan del norte", "agusan del sur", "butuan", "surigao del norte", 
+    "surigao del sur", "dinagat islands", "cotabato", "south cotabato", "sultan kudarat", "sarangani",
   ];
 
   const ISLAND = [
-    "palawan", "siargao", "batanes", "camiguin", "siquijor island"
+    "palawan", "siargao", "batanes", "camiguin", "siquijor island", "basilan", "lanao del sur", 
+    "maguindanao del sur", "sulu", "tawi-tawi"
   ];
 
   const containsAny = (list) => list.some(k => t.includes(k));
@@ -508,15 +520,27 @@ async function finalizeOrder(){
   }
 
   // ========= ADDRESS vs REGION CHECK (J&T only) =========
+    // ========= ADDRESS vs REGION CHECK (J&T only) =========
   if (!isLalamove) {
     const inferred = inferRegionFromAddress(buyer.address);
-    if (inferred && inferred !== region) {
+
+    // 1) Walang ma-detect na kahit ano sa list → kailangan betin ang address
+    if (!inferred) {
+      return toast(
+        "We couldn't detect your region from the address. Please include your city/province (e.g. Quezon City, Cebu, Davao) and make sure it matches the Region dropdown.",
+        "warning"
+      );
+    }
+
+    // 2) Na-detect pero hindi tugma sa piniling Region
+    if (inferred !== region) {
       return toast(
         `Your address looks like it is in ${inferred}, but you selected ${region}. Please update the Region dropdown to match your address.`,
         "warning"
       );
     }
   }
+
 
   // For Lalamove: shipping fee = 0, buyer will book pickup
   const shipping_fee = isLalamove ? 0 : null;
@@ -619,17 +643,21 @@ function toast(message, type = "info") {
 
 function showOrderSuccess(orderId){
   const backdrop = document.createElement("div");
-  backdrop.className = "modal-backdrop";
+  backdrop.className = "modal-backdrop order-success";
+
   backdrop.innerHTML = `
-    <div class="modal modal-sm" role="dialog">
+    <div class="modal-success" role="dialog">
       <h2>Order Confirmed 🎉</h2>
       <p>Your order has been placed successfully!</p>
       <p><strong>Order ID:</strong> ${orderId}</p>
       <p>We’ll send you a confirmation email once your order has been shipped.</p>
-      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">OK</button>
-    </div>`;
+      <button class="btn primary" onclick="this.closest('.modal-backdrop').remove()">OK</button>
+    </div>
+  `;
+
   document.body.appendChild(backdrop);
 }
+
 
 
 
