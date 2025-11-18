@@ -784,6 +784,40 @@ label{
   }
 }
 
+/* ORDER SUCCESS MODAL */
+.modal-backdrop.order-success {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(2px);
+  z-index: 999; /* ABOVE EVERYTHING */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-success {
+  background: var(--surface);
+  padding: 24px;
+  width: 100%;
+  max-width: 380px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+.modal-success h2 {
+  margin-bottom: 8px;
+}
+
+.modal-success button {
+  margin-top: 16px;
+}
+
 /* ============================
    RECEIPT VIEW
    ============================ */
@@ -870,4 +904,76 @@ label{
 #statusBadge.error{
   background: rgba(192,57,43,.12);
   color: #C0392B;
+}
+
+/* QR images inside checkout */
+.payment-qr {
+  width: 100%;
+  max-width: 160px;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto 6px;
+}
+
+.payment-card {
+  text-align: center;
+  padding: 12px;
+}
+
+.checkout-pay {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* dropdown */
+.pay-method select {
+  width: 100%;
+}
+
+/* QR row */
+.pay-qrs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.payment-card {
+  flex: 1 1 0;
+  text-align: center;
+  padding: 12px;
+}
+
+.payment-qr {
+  width: 100%;
+  max-width: 160px;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto 6px;
+}
+
+/* file input */
+.pay-file input[type="file"] {
+  width: 100%;
+}
+
+/* button sa pinaka-baba */
+.pay-submit {
+  margin-top: 4px;
+}
+
+
+.layout {
+  display: grid;
+  gap: 24px;         
+}
+
+@media (min-width: 768px) {
+  .layout {
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+    align-items: flex-start;
+  }
 }
