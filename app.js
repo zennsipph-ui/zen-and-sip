@@ -229,7 +229,7 @@ function renderCheckoutPanel(forceOpen = false) {
     </li>
   `).join("");
 
-  root.innerHTML = `
+    root.innerHTML = `
     <ul class="mini-cart-list">
       ${cartLines}
     </ul>
@@ -281,8 +281,9 @@ function renderCheckoutPanel(forceOpen = false) {
       </tr>
     </table>
 
-    <div class="stack" style="margin-top:4px">
-      <div class="row wrap">
+    <div class="checkout-pay">
+
+      <div class="row wrap pay-qrs">
         <div class="card payment-card">
           <img src="assets/qr-gcash.png" alt="GCash QR" class="payment-qr"/>
           <div class="muted">GCash</div>
@@ -293,18 +294,28 @@ function renderCheckoutPanel(forceOpen = false) {
         </div>
       </div>
 
-      <div class="row wrap">
-        <input type="file" id="receiptFile" accept="image/*,application/pdf">
-        <p id="formMsg" class="msg" style="display:none"></p>
-        <select id="paymentMethod">
-          <option value="GCash">GCash</option>
-          <option value="GoTyme">GoTyme</option>
-        </select>
-        <button class="btn primary" id="finalizeBtn" onclick="finalizeOrder()">Place Order</button>
+      <div class="row wrap pay-controls">
+        <div class="pay-file">
+          <input type="file" id="receiptFile" accept="image/*,application/pdf">
+          <p id="formMsg" class="msg" style="display:none"></p>
+        </div>
+        <div class="pay-method">
+          <select id="paymentMethod">
+            <option value="GCash">GCash</option>
+            <option value="GoTyme">GoTyme</option>
+          </select>
+        </div>
+        <div class="pay-button">
+          <button class="btn primary full" id="finalizeBtn" onclick="finalizeOrder()">Place Order</button>
+        </div>
       </div>
-      <p class="muted">Choose your receipt file — it will auto-upload. <span id="receiptStatus" class="muted"></span></p>
+
+      <p class="muted small-note">
+        Choose your receipt file — it will auto-upload. <span id="receiptStatus" class="muted"></span>
+      </p>
     </div>
   `;
+
 
   $("#courier")?.addEventListener("change", () => {
     toggleLalamoveUI();
