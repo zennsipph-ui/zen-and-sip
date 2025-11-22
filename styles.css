@@ -1108,11 +1108,11 @@ label{
 .bulk-info {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1px;
 }
 
 .bulk-price-block {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 900;
   color: var(--accent);
 }
@@ -1191,5 +1191,32 @@ label{
 .bulk-spec-grid dd {
   margin: 0;
 }
+
+/* Bulk modal – mobile layout override */
+@media (max-width: 600px) {
+  .bulk-modal {
+    padding: 18px !important;
+  }
+
+  .bulk-layout {
+    grid-template-columns: 1fr;   /* 🔥 stack image + text */
+    gap: 18px;
+  }
+
+  .bulk-title {
+    font-size: 20px;
+  }
+
+  .bulk-main-price {
+    font-size: 19px;
+  }
+
+  .bulk-spec-grid {
+    grid-template-columns: 100px 1fr;
+    row-gap: 4px;
+    font-size: 13px;
+  }
+}
+
 
 
