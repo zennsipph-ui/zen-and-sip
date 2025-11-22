@@ -22,9 +22,40 @@
     </header>
 
     <h2 style="margin-top:20px;">Bulk / Wholesale Catalogue</h2>
-    <p class="muted small">This website can only be accessed via the link provided by Zen &amp; Sip. This page is exclusively for bulk buyers.</p>
+<p class="muted small">
+  This website can only be accessed via the link provided by Zen &amp; Sip.
+  This page is exclusively for bulk buyers.
+</p>
 
-    <div id="bulkRoot" class="product-grid bulk-grid"></div>
+<!-- FILTERS -->
+<div class="bulk-filters">
+  <div class="bulk-filter">
+    <label for="bulkGradeFilter">Grade</label>
+    <select id="bulkGradeFilter" onchange="applyBulkFilters()">
+      <option value="ALL">All grades</option>
+      <option value="ceremonial">Ceremonial</option>
+      <option value="premium">Premium</option>
+      <option value="semi">Semi-ceremonial</option>
+      <option value="cafe">Cafe grade</option>
+      <option value="culinary">Culinary</option>
+    </select>
+  </div>
+
+  <div class="bulk-filter">
+    <label for="bulkPriceFilter">Price range</label>
+    <select id="bulkPriceFilter" onchange="applyBulkFilters()">
+      <option value="ALL">Any price</option>
+      <option value="lt10">Below 10,000</option>
+      <option value="10to15">10,000 – 15,000</option>
+      <option value="15to20">15,000 – 20,000</option>
+      <option value="gt20">20,000 and above</option>
+    </select>
+  </div>
+</div>
+
+<!-- GRID -->
+<div id="bulkRoot" class="product-grid bulk-grid"></div>
+
   </div>
 
   <link rel="stylesheet" href="./styles.css">

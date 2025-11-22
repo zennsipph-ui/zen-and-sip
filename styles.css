@@ -1033,11 +1033,27 @@ label{
 
 /* IMAGE SECTION — bigger than text */
 .bulk-image-wrap {
+  position: relative;        /* 👈 para ma-anchor si badge */
   width: 100%;
   aspect-ratio: 1 / 1;
   display: block;
   overflow: hidden;
 }
+
+.bulk-grade-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(95, 111, 82, 0.92); /* dark olive vibe */
+  color: #FEFAE0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 
 .bulk-image-wrap img {
   width: 100%;
@@ -1055,7 +1071,7 @@ label{
 .bulk-name {
   margin: 0 0 4px;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 20px;
 }
 
 .bulk-price {
@@ -1131,4 +1147,26 @@ label{
   padding-left: 18px;
   line-height: 1.5;
   font-size: 14px;
+}
+
+/* === Bulk filters === */
+.bulk-filters {
+  margin: 16px 0 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.bulk-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.bulk-filter label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
 }

@@ -32,8 +32,10 @@ const state = {
 };
 
 const bulkState = {
-  items: []
+  items: [],
+  allItems: []  // full list from API
 };
+
 
 
 function $(q){ return document.querySelector(q); }
@@ -814,6 +816,105 @@ function renderDesc(text){
 /* =======================
    BULK CATALOGUE (READ-ONLY)
 ========================== */
+function renderBulkGrid(list) {
+  const root = document.getElementById("bulkRoot");
+  if (!root) return;
+
+  if (!list.length) {
+    root.innerHTML = `<p class="muted">No bulk products found.</p>`;
+    bulkState.items = [];
+    return;
+  }
+
+  bulkState.items = list;
+
+  root.innerHTML = list.map((p, index) => {
+    const img = p.image_url
+      ? `./assets/${p.image_url}`
+      : forceImagePath(p.name);
+
+    const gradeLabel = p.grade ? String(p.grade) : "";
+
+    return `
+      <article class="product-card bulk-card" role="button"
+              onclick="openBulkModal(${index})">
+        <div class="bulk-image-wrap">
+          ${
+            gradeLabel
+              ? `<span class="bulk-grade-badge">${gradeLabel}</span>`
+              : ""
+          }
+          <img class="product-card-image"
+               src="${img}"
+               alt="${p.name}">
+        </div>
+
+        <div class="bulk-info">
+          <p class="bulk-name">${p.name}</p>
+          <p class="bulk-price">${currency(p.price)}</p>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function applyBulkFilters() {
+  if (!bulkState.allItems || !bulkState.allItems.length) return;
+
+  const gradeSel = document.getElementById("bulkGradeFilter");
+  const priceSel = document.getElementById("bulkPriceFilter");
+
+  const gradeVal = gradeSel ? gradeSel.value : "ALL";
+  const priceVal = priceSel ? priceSel.value : "ALL";
+
+  let list = bulkState.allItems.slice();
+
+  // --- Grade filter ---
+  if (gradeVal !== "ALL") {
+    list = list.filter(p => {
+      const g = String(p.grade || "").toLowerCase();
+      if (!g) return false;
+
+      // 🔥 CEREMONIAL PRIORITY
+      // kahit "semi ceremonial" or may kahalong ibang grade
+      // basta may "ceremonial" → pasok sa Ceremonial filter
+      if (gradeVal === "ceremonial") {
+        return g.includes("ceremonial");
+      }
+
+      // ❗ Kapag HINDI ceremonial filter:
+      // i-exclude lahat ng may "ceremonial" para di sila
+      // sumama sa Premium / Semi / Cafe / Culinary
+      const isCeremonial = g.includes("ceremonial");
+      if (isCeremonial) return false;
+
+      if (gradeVal === "premium") return g.includes("premium");
+      if (gradeVal === "semi")    return g.includes("semi");
+      if (gradeVal === "cafe")    return g.includes("cafe");
+      if (gradeVal === "culinary")return g.includes("culinary");
+
+      return true;
+    });
+  }
+
+  // --- Price filter ---
+  if (priceVal !== "ALL") {
+    list = list.filter(p => {
+      const price = Number(p.price || 0);
+      if (!price || Number.isNaN(price)) return false;
+
+      if (priceVal === "lt10")   return price < 10000;
+      if (priceVal === "10to15") return price >= 10000 && price <= 15000;
+      if (priceVal === "15to20") return price >= 15000 && price <= 20000;
+      if (priceVal === "gt20")   return price > 20000;
+
+      return true;
+    });
+  }
+
+  renderBulkGrid(list);
+}
+
 
 async function loadBulkProducts() {
   const root = document.getElementById("bulkRoot");
@@ -825,40 +926,23 @@ async function loadBulkProducts() {
     const data = await apiFetch(`${API}?action=bulk`);
     const items = data.items || [];
 
-    bulkState.items = items;
+    // full list from backend
+    bulkState.allItems = items;
 
     if (!items.length) {
-      root.innerHTML = `<p class="muted">No bulk products found.</p>`;
+      renderBulkGrid([]);
       return;
     }
 
-    root.innerHTML = items.map((p, index) => {
-      const img = p.image_url
-        ? `./assets/${p.image_url}`
-        : forceImagePath(p.name);
-
-      return `
-        <article class="product-card bulk-card" role="button"
-                onclick="openBulkModal(${index})">
-          <div class="bulk-image-wrap">
-            <img class="product-card-image"
-                src="${img}"
-                alt="${p.name}">
-          </div>
-
-          <div class="bulk-info">
-            <p class="bulk-name">${p.name}</p>
-            <p class="bulk-price">${currency(p.price)}</p>
-          </div>
-        </article>
-        `;
-    }).join("");
+    // initial display (respect current dropdowns kung may nakaset)
+    applyBulkFilters();
 
   } catch (err) {
     console.error("Bulk catalogue error:", err);
     root.innerHTML = `<p class="error">Error loading catalogue: ${err}</p>`;
   }
 }
+
 
 function splitLines(val) {
   return String(val || "")
