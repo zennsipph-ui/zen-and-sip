@@ -828,6 +828,7 @@ function renderBulkGrid(list) {
 
   bulkState.items = list;
 
+  // Render product cards
   root.innerHTML = list.map((p, index) => {
     const img = p.image_url
       ? `./assets/${p.image_url}`
@@ -856,6 +857,14 @@ function renderBulkGrid(list) {
       </article>
     `;
   }).join("");
+
+  // 🔥 FIX FOR MOBILE LAYOUT (Safari, Instagram WebView)
+  waitForImagesToLoad(() => {
+    // force reflow to fix wrong initial spacing
+    root.style.display = "none";
+    void root.offsetHeight;   // layout flush trick
+    root.style.display = "";
+  });
 }
 
 function waitForImagesToLoad(callback) {
