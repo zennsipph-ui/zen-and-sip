@@ -31,6 +31,11 @@ const state = {
   order: null
 };
 
+const bulkState = {
+  items: []
+};
+
+
 function $(q){ return document.querySelector(q); }
 function currency(v){ return `₱${(Number(v)||0).toLocaleString()}`; }
 
@@ -804,5 +809,138 @@ function renderDesc(text){
   const lines = t.split(/\n|•/).map(s=>s.trim()).filter(Boolean);
   if (lines.length <= 1) return `<p class="modal-desc">${t}</p>`;
   return `<ul class="modal-list">` + lines.map(l=>`<li>${l}</li>`).join("") + `</ul>`;
+}
+
+/* =======================
+   BULK CATALOGUE (READ-ONLY)
+========================== */
+
+async function loadBulkProducts() {
+  const root = document.getElementById("bulkRoot");
+  if (!root) return;
+
+  root.innerHTML = `<p class="muted">Loading catalogue…</p>`;
+
+  try {
+    const data = await apiFetch(`${API}?action=bulk`);
+    const items = data.items || [];
+
+    bulkState.items = items;
+
+    if (!items.length) {
+      root.innerHTML = `<p class="muted">No bulk products found.</p>`;
+      return;
+    }
+
+    root.innerHTML = items.map((p, index) => {
+      const img = p.image_url
+        ? `./assets/${p.image_url}`
+        : forceImagePath(p.name);
+
+      return `
+        <article class="product-card bulk-card" role="button"
+                onclick="openBulkModal(${index})">
+          <div class="bulk-image-wrap">
+            <img class="product-card-image"
+                src="${img}"
+                alt="${p.name}">
+          </div>
+
+          <div class="bulk-info">
+            <p class="bulk-name">${p.name}</p>
+            <p class="bulk-price">${currency(p.price)}</p>
+          </div>
+        </article>
+        `;
+    }).join("");
+
+  } catch (err) {
+    console.error("Bulk catalogue error:", err);
+    root.innerHTML = `<p class="error">Error loading catalogue: ${err}</p>`;
+  }
+}
+
+function splitLines(val) {
+  return String(val || "")
+    .split(/[;,\n•]/)
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+function openBulkModal(index) {
+  const p = bulkState.items[index];
+  if (!p) return;
+
+  const img = p.image_url
+    ? `./assets/${p.image_url}`
+    : forceImagePath(p.name);
+
+  // lines for flavor_profile / best_for
+  const splitLines = (val) =>
+    String(val || "")
+      .split(/[,\n]/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+  const flavors = splitLines(p.flavor_profile);
+  const bestFor = splitLines(p.best_for);
+
+  const samplePrice =
+    p.sample_price ? (isNaN(p.sample_price)
+      ? p.sample_price
+      : currency(p.sample_price)) : null;
+
+  const backdrop = document.createElement("div");
+  backdrop.className = "modal-backdrop";
+
+  backdrop.innerHTML = `
+    <div class="modal-content bulk-modal" role="dialog" aria-modal="true">
+      <div class="modal-header bulk-modal-header">
+        <button class="modal-close-btn" aria-label="Close"
+          onclick="this.closest('.modal-backdrop').remove()">×</button>
+      </div>
+
+      <div class="modal-product-layout bulk-layout">
+        <!-- LEFT: name + big image -->
+        <div class="bulk-left">
+          <h3 class="bulk-title">${p.name}</h3>
+          <div class="modal-product-image-section bulk-image">
+            <img class="modal-main-image"
+                 src="${img}"
+                 alt="${p.name}">
+          </div>
+        </div>
+
+        <!-- RIGHT: specs -->
+        <div class="modal-product-info-section bulk-info">
+          <div class="bulk-price-block">
+            <div class="bulk-main-price">${currency(p.price)}</div>
+            ${samplePrice ? `<div class="bulk-sample-price">Sample: ${samplePrice}</div>` : ""}
+          </div>
+
+          <dl class="bulk-spec-grid">
+            ${p.origin ? `<dt>Origin</dt><dd>${p.origin}</dd>` : ""}
+            ${p.grade  ? `<dt>Grade</dt><dd>${p.grade}</dd>` : ""}
+            ${p.type   ? `<dt>Type</dt><dd>${p.type}</dd>` : ""}
+            ${p.use    ? `<dt>Use</dt><dd>${p.use}</dd>` : ""}
+            ${flavors.length ? `
+              <dt>Flavor Profile</dt>
+              <dd>${flavors.join("<br>")}</dd>
+            ` : ""}
+            ${bestFor.length ? `
+              <dt>Best For</dt>
+              <dd>${bestFor.join("<br>")}</dd>
+            ` : ""}
+          </dl>
+        </div>
+      </div>
+    </div>
+  `;
+
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) backdrop.remove();
+  });
+
+  document.body.appendChild(backdrop);
 }
 

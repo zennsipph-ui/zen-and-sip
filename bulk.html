@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Bulk Catalogue — Zen & Sip</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./config.js"></script>
+</head>
+<body>
+
+  <div class="container">
+    <header class="topbar">
+      <div class="logo">
+        <img src="./assets/logo.png" alt="Zen & Sip logo">
+      </div>
+      <nav class="row">
+        <a href="index.html" class="btn ghost">Home</a>
+        <a href="./shop.html" class="btn">Shop now</a>
+      </nav>
+    </header>
+
+    <h2 style="margin-top:20px;">Bulk / Wholesale Catalogue</h2>
+    <p class="muted small">This website can only be accessed via the link provided by Zen &amp; Sip. This page is exclusively for bulk buyers.</p>
+
+    <div id="bulkRoot" class="product-grid bulk-grid"></div>
+  </div>
+
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", loadBulkProducts);
+  </script>
+
+
+</body>
+</html>
