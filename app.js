@@ -992,7 +992,6 @@ function openBulkModal(index) {
     ? `./assets/${p.image_url}`
     : forceImagePath(p.name);
 
-  // lines for flavor_profile / best_for
   const splitLines = (val) =>
     String(val || "")
       .split(/[,\n]/)
@@ -1018,9 +1017,8 @@ function openBulkModal(index) {
       </div>
 
       <div class="modal-product-layout bulk-layout">
-        <!-- LEFT: name + big image -->
+        <!-- LEFT: big image only -->
         <div class="bulk-left">
-          <h3 class="bulk-title">${p.name}</h3>
           <div class="modal-product-image-section bulk-image">
             <img class="modal-main-image"
                  src="${img}"
@@ -1028,8 +1026,10 @@ function openBulkModal(index) {
           </div>
         </div>
 
-        <!-- RIGHT: specs -->
+        <!-- RIGHT: title + price + specs -->
         <div class="modal-product-info-section bulk-info">
+          <h3 class="bulk-title">${p.name}</h3>
+
           <div class="bulk-price-block">
             <div class="bulk-main-price">${currency(p.price)}</div>
             ${samplePrice ? `<div class="bulk-sample-price">Sample: ${samplePrice}</div>` : ""}
@@ -1060,6 +1060,7 @@ function openBulkModal(index) {
 
   document.body.appendChild(backdrop);
 }
+
 
 function waitForImagesToLoad(callback) {
   const imgs = document.querySelectorAll("img");

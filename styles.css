@@ -13,6 +13,7 @@
   /* text */
   --text: #5F6F52;        /* Dark Olive Green – main text */
   --muted: #8A8F7C;       /* Softer olive/grey for muted text */
+  --font-main: 'Manrope', sans-serif;
 
   /* accents */
   --accent: #C4661F;      /* Alloy Orange – primary buttons / CTAs */
@@ -39,7 +40,7 @@ body{
     #F9EBC7 50%,
     #A9B388 100%
   );
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-main);
   font-size: 16px;
   line-height: 1.5;
   color: var(--text);
@@ -1081,10 +1082,13 @@ label{
 }
 
 
+/* Bulk modal – responsive */
 /* ===== Bulk modal ===== */
 
 .bulk-modal {
   padding: 28px !important;
+  max-width: 960px !important;   /* 🔥 increase size */
+  width: 95%;
 }
 
 .bulk-modal-header {
@@ -1104,31 +1108,72 @@ label{
   box-shadow: 0 4px 14px rgba(0,0,0,0.12);
 }
 
+/* RIGHT SIDE CONTENT (title + price + specs) */
 .bulk-info {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
+/* PRODUCT NAME – big green text */
+.bulk-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--olive-deep);
+  margin: 0 0 4px;
+  text-align: left;
+}
+
+/* PRICE BLOCK – orange price + small grey sample */
 .bulk-price-block {
-  font-size: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.bulk-main-price {
+  font-size: 22px;
   font-weight: 900;
-  color: var(--accent);
+  margin-top: -4px;
+  color: var(--accent);   /* orange */
+  text-align: left;
 }
 
 .bulk-sample-price {
-  font-size: 0.8rem;   /* mas maliit */
-  color: #777;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);    /* grey/olive */
   font-weight: 600;
+  text-align: left;
 }
 
+/* SPECS GRID – left labels orange, right values normal */
 .bulk-spec-grid {
   display: grid;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: 140px 1fr;
   column-gap: 12px;
-  row-gap: 6px;
-  font-size: 14px;
+  row-gap: 8px;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: left;
 }
+
+.bulk-spec-grid dt {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--accent);   /* orange labels: Origin, Grade, etc. */
+  text-align: left;
+}
+
+.bulk-spec-grid dd {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text);
+  text-align: left;
+}
+
 
 .bulk-spec-grid div:first-child {
   font-weight: 600;
@@ -1148,6 +1193,34 @@ label{
   line-height: 1.5;
   font-size: 14px;
 }
+
+/* Bulk modal – mobile layout */
+@media (max-width: 600px) {
+  .bulk-modal {
+    padding: 18px !important;
+  }
+
+  .bulk-layout {
+    grid-template-columns: 1fr;  /* stack image + details */
+    gap: 20px;
+  }
+
+  .bulk-left {
+    margin-bottom: 4px;
+  }
+
+  .bulk-title {
+    margin-bottom: 8px;
+    font-size: 18px;
+  }
+
+  .bulk-spec-grid {
+    grid-template-columns: 100px 1fr;
+    row-gap: 4px;
+    font-size: 13px;
+  }
+}
+
 
 /* === Bulk filters === */
 .bulk-filters {
