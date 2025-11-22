@@ -828,6 +828,7 @@ function renderBulkGrid(list) {
 
   bulkState.items = list;
 
+  // Render product cards
   root.innerHTML = list.map((p, index) => {
     const img = p.image_url
       ? `./assets/${p.image_url}`
@@ -856,7 +857,39 @@ function renderBulkGrid(list) {
       </article>
     `;
   }).join("");
+
+  // 🔥 FIX FOR MOBILE LAYOUT (Safari, Instagram WebView)
+  waitForImagesToLoad(() => {
+    // force reflow to fix wrong initial spacing
+    root.style.display = "none";
+    void root.offsetHeight;   // layout flush trick
+    root.style.display = "";
+  });
 }
+
+function waitForImagesToLoad(callback) {
+  const imgs = document.querySelectorAll("img");
+  let loaded = 0;
+  if (imgs.length === 0) return callback();
+
+  imgs.forEach(img => {
+    if (img.complete) {
+      loaded++;
+      if (loaded === imgs.length) callback();
+    } else {
+      img.onload = () => {
+        loaded++;
+        if (loaded === imgs.length) callback();
+      };
+      img.onerror = () => {
+        loaded++;
+        if (loaded === imgs.length) callback();
+      };
+    }
+  });
+}
+
+
 
 function applyBulkFilters() {
   if (!bulkState.allItems || !bulkState.allItems.length) return;
@@ -1026,5 +1059,27 @@ function openBulkModal(index) {
   });
 
   document.body.appendChild(backdrop);
+}
+
+function waitForImagesToLoad(callback) {
+  const imgs = document.querySelectorAll("img");
+  let loaded = 0;
+  if (imgs.length === 0) return callback();
+
+  imgs.forEach(img => {
+    if (img.complete) {
+      loaded++;
+      if (loaded === imgs.length) callback();
+    } else {
+      img.onload = () => {
+        loaded++;
+        if (loaded === imgs.length) callback();
+      };
+      img.onerror = () => {
+        loaded++;
+        if (loaded === imgs.length) callback();
+      };
+    }
+  });
 }
 
