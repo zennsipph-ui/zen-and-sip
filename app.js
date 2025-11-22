@@ -858,6 +858,28 @@ function renderBulkGrid(list) {
   }).join("");
 }
 
+function waitForImagesToLoad(callback) {
+  const imgs = document.querySelectorAll("img");
+  let loaded = 0;
+  if (imgs.length === 0) return callback();
+
+  imgs.forEach(img => {
+    if (img.complete) {
+      loaded++;
+      if (loaded === imgs.length) callback();
+    } else {
+      img.onload = () => {
+        loaded++;
+        if (loaded === imgs.length) callback();
+      };
+      img.onerror = () => {
+        loaded++;
+        if (loaded === imgs.length) callback();
+      };
+    }
+  });
+}
+
 function applyBulkFilters() {
   if (!bulkState.allItems || !bulkState.allItems.length) return;
 
