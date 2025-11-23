@@ -834,20 +834,27 @@ function renderBulkGrid(list) {
       ? `./assets/${p.image_url}`
       : forceImagePath(p.name);
 
-    const gradeLabel = p.grade ? String(p.grade) : "";
+    const isHouji = (
+      String(p.grade || "").toLowerCase().includes("houji") ||
+      String(p.type  || "").toLowerCase().includes("houji") ||
+      String(p.name  || "").toLowerCase().includes("houji")
+    );
+
+    const gradeLabelRaw = p.grade ? String(p.grade) : "";
+    const badgeText = isHouji ? "houji" : gradeLabelRaw;
 
     return `
       <article class="product-card bulk-card" role="button"
               onclick="openBulkModal(${index})">
         <div class="bulk-image-wrap">
           ${
-            gradeLabel
-              ? `<span class="bulk-grade-badge">${gradeLabel}</span>`
+            badgeText
+              ? `<span class="bulk-grade-badge">${badgeText}</span>`
               : ""
           }
           <img class="product-card-image"
-               src="${img}"
-               alt="${p.name}">
+                src="${img}"
+                alt="${p.name}">
         </div>
 
         <div class="bulk-info">
@@ -856,6 +863,7 @@ function renderBulkGrid(list) {
         </div>
       </article>
     `;
+
   }).join("");
 
   // 🔥 FIX FOR MOBILE LAYOUT (Safari, Instagram WebView)
@@ -901,32 +909,40 @@ function applyBulkFilters() {
   let list = bulkState.allItems.slice();
 
   // --- Grade filter ---
-  if (gradeVal !== "ALL") {
-    list = list.filter(p => {
-      const g = String(p.grade || "").toLowerCase();
-      if (!g) return false;
+  // --- Grade filter ---
+if (gradeVal !== "ALL") {
+  list = list.filter(p => {
+    const gradeRaw = String(p.grade || "");
+    const g    = gradeRaw.toLowerCase();
+    const type = String(p.type || "").toLowerCase();
+    const name = String(p.name || "").toLowerCase();
 
-      // 🔥 CEREMONIAL PRIORITY
-      // kahit "semi ceremonial" or may kahalong ibang grade
-      // basta may "ceremonial" → pasok sa Ceremonial filter
-      if (gradeVal === "ceremonial") {
-        return g.includes("ceremonial");
-      }
+    // ✅ Houji filter: hanapin "houji" sa grade / type / name
+    if (gradeVal === "houji") {
+      const haystack = `${g} ${type} ${name}`;
+      return haystack.includes("houji");
+    }
 
-      // ❗ Kapag HINDI ceremonial filter:
-      // i-exclude lahat ng may "ceremonial" para di sila
-      // sumama sa Premium / Semi / Cafe / Culinary
-      const isCeremonial = g.includes("ceremonial");
-      if (isCeremonial) return false;
+    if (!g) return false;
 
-      if (gradeVal === "premium") return g.includes("premium");
-      if (gradeVal === "semi")    return g.includes("semi");
-      if (gradeVal === "cafe")    return g.includes("cafe");
-      if (gradeVal === "culinary")return g.includes("culinary");
+    // 🔥 CEREMONIAL PRIORITY
+    if (gradeVal === "ceremonial") {
+      return g.includes("ceremonial");
+    }
 
-      return true;
-    });
-  }
+    // ❗ HINDI ceremonial filter:
+    const isCeremonial = g.includes("ceremonial");
+    if (isCeremonial) return false;
+
+    if (gradeVal === "premium")  return g.includes("premium");
+    if (gradeVal === "semi")     return g.includes("semi");
+    if (gradeVal === "cafe")     return g.includes("cafe");
+    if (gradeVal === "culinary") return g.includes("culinary");
+
+    return true;
+  });
+}
+
 
   // --- Price filter ---
   if (priceVal !== "ALL") {
@@ -990,7 +1006,7 @@ function openBulkModal(index) {
     ? `./assets/${p.image_url}`
     : forceImagePath(p.name);
 
-  // lines for flavor_profile / best_for
+  // convert flavor_profile / best_for to bullet list
   const splitLines = (val) =>
     String(val || "")
       .split(/[,\n]/)
@@ -1000,11 +1016,51 @@ function openBulkModal(index) {
   const flavors = splitLines(p.flavor_profile);
   const bestFor = splitLines(p.best_for);
 
+  // detect HOUJI item
+  const isHouji = (
+    String(p.grade || "").toLowerCase().includes("houji") ||
+    String(p.type  || "").toLowerCase().includes("houji") ||
+    String(p.name  || "").toLowerCase().includes("houji")
+  );
+
   const samplePrice =
     p.sample_price ? (isNaN(p.sample_price)
       ? p.sample_price
       : currency(p.sample_price)) : null;
 
+  // ---------- DEFAULT MATCHA SPECS ----------
+  const defaultSpecHtml = `
+    <dl class="bulk-spec-grid">
+      ${p.origin ? `<dt>Origin</dt><dd>${p.origin}</dd>` : ""}
+      ${p.grade  ? `<dt>Grade</dt><dd>${p.grade}</dd>` : ""}
+      ${p.type   ? `<dt>Type</dt><dd>${p.type}</dd>` : ""}
+      ${p.use    ? `<dt>Use</dt><dd>${p.use}</dd>` : ""}
+      ${flavors.length ? `
+        <dt>Flavor Profile</dt>
+        <dd>${flavors.join("<br>")}</dd>
+      ` : ""}
+      ${bestFor.length ? `
+        <dt>Best For</dt>
+        <dd>${bestFor.join("<br>")}</dd>
+      ` : ""}
+    </dl>
+  `;
+
+  // ---------- HOUJI-CHA SPECS ----------
+  const houjiSpecHtml = `
+    <dl class="bulk-spec-grid">
+      ${p.origin ? `<dt>Origin</dt><dd>${p.origin}</dd>` : ""}
+      ${p.base_tea    ? `<dt>Base Tea</dt><dd>${p.base_tea}</dd>` : ""}
+      ${p.roast_level ? `<dt>Roasting Level</dt><dd>${p.roast_level}</dd>` : ""}
+      ${p.harvest     ? `<dt>Harvest</dt><dd>${p.harvest}</dd>` : ""}
+      ${p.flavor      ? `<dt>Flavor</dt><dd>${p.flavor}</dd>` : ""}
+      ${p.cultivar    ? `<dt>Cultivar</dt><dd>${p.cultivar}</dd>` : ""}
+    </dl>
+  `;
+
+  const specHtml = isHouji ? houjiSpecHtml : defaultSpecHtml;
+
+  // ---------- MODAL ----------
   const backdrop = document.createElement("div");
   backdrop.className = "modal-backdrop";
 
@@ -1016,9 +1072,8 @@ function openBulkModal(index) {
       </div>
 
       <div class="modal-product-layout bulk-layout">
-        <!-- LEFT: name + big image -->
+        <!-- LEFT: IMAGE ONLY -->
         <div class="bulk-left">
-          <h3 class="bulk-title">${p.name}</h3>
           <div class="modal-product-image-section bulk-image">
             <img class="modal-main-image"
                  src="${img}"
@@ -1026,27 +1081,16 @@ function openBulkModal(index) {
           </div>
         </div>
 
-        <!-- RIGHT: specs -->
+        <!-- RIGHT: ALL TEXT (TITLE, PRICE, SPECS) -->
         <div class="modal-product-info-section bulk-info">
+          <h3 class="bulk-title">${p.name}</h3>
+
           <div class="bulk-price-block">
             <div class="bulk-main-price">${currency(p.price)}</div>
             ${samplePrice ? `<div class="bulk-sample-price">Sample: ${samplePrice}</div>` : ""}
           </div>
 
-          <dl class="bulk-spec-grid">
-            ${p.origin ? `<dt>Origin</dt><dd>${p.origin}</dd>` : ""}
-            ${p.grade  ? `<dt>Grade</dt><dd>${p.grade}</dd>` : ""}
-            ${p.type   ? `<dt>Type</dt><dd>${p.type}</dd>` : ""}
-            ${p.use    ? `<dt>Use</dt><dd>${p.use}</dd>` : ""}
-            ${flavors.length ? `
-              <dt>Flavor Profile</dt>
-              <dd>${flavors.join("<br>")}</dd>
-            ` : ""}
-            ${bestFor.length ? `
-              <dt>Best For</dt>
-              <dd>${bestFor.join("<br>")}</dd>
-            ` : ""}
-          </dl>
+          ${specHtml}
         </div>
       </div>
     </div>
@@ -1058,6 +1102,8 @@ function openBulkModal(index) {
 
   document.body.appendChild(backdrop);
 }
+
+
 
 function waitForImagesToLoad(callback) {
   const imgs = document.querySelectorAll("img");
