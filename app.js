@@ -834,6 +834,8 @@ function renderBulkGrid(list) {
       ? `./assets/${p.image_url}`
       : forceImagePath(p.name);
 
+    const isUnavailable = (p.is_available === false);
+
     const isHouji = (
       String(p.grade || "").toLowerCase().includes("houji") ||
       String(p.type  || "").toLowerCase().includes("houji") ||
@@ -844,25 +846,24 @@ function renderBulkGrid(list) {
     const badgeText = isHouji ? "houji" : gradeLabelRaw;
 
     return `
-      <article class="product-card bulk-card" role="button"
-              onclick="openBulkModal(${index})">
-        <div class="bulk-image-wrap">
-          ${
-            badgeText
-              ? `<span class="bulk-grade-badge">${badgeText}</span>`
-              : ""
-          }
-          <img class="product-card-image"
-                src="${img}"
-                alt="${p.name}">
-        </div>
+  <article class="product-card bulk-card ${isUnavailable ? "unavailable" : ""}" role="button"
+          ${isUnavailable ? "" : `onclick="openBulkModal(${index})"`}>
+    <div class="bulk-image-wrap">
+      ${badgeText ? `<span class="bulk-grade-badge">${badgeText}</span>` : ""}
+      ${isUnavailable ? `<span class="bulk-unavail-badge">Unavailable</span>` : ""}
 
-        <div class="bulk-info">
-          <p class="bulk-name">${p.name}</p>
-          <p class="bulk-price">${currency(p.price)}</p>
-        </div>
-      </article>
-    `;
+      <img class="product-card-image ${isUnavailable ? "grayscale" : ""}"
+            src="${img}"
+            alt="${p.name}">
+    </div>
+
+    <div class="bulk-info">
+      <p class="bulk-name">${p.name}</p>
+      <p class="bulk-price">${currency(p.price)}</p>
+    </div>
+  </article>
+`;
+
 
   }).join("");
 
@@ -909,39 +910,53 @@ function applyBulkFilters() {
   let list = bulkState.allItems.slice();
 
   // --- Grade filter ---
-  // --- Grade filter ---
-if (gradeVal !== "ALL") {
-  list = list.filter(p => {
-    const gradeRaw = String(p.grade || "");
-    const g    = gradeRaw.toLowerCase();
-    const type = String(p.type || "").toLowerCase();
-    const name = String(p.name || "").toLowerCase();
+  if (gradeVal !== "ALL") {
+    list = list.filter(p => {
+      const gradeRaw = String(p.grade || "");
+      const g    = gradeRaw.toLowerCase();
+      const type = String(p.type || "").toLowerCase();
+      const name = String(p.name || "").toLowerCase();
 
-    // ✅ Houji filter: hanapin "houji" sa grade / type / name
-    if (gradeVal === "houji") {
-      const haystack = `${g} ${type} ${name}`;
-      return haystack.includes("houji");
-    }
+      // ✅ Houji filter: hanapin "houji" sa grade / type / name
+      if (gradeVal === "houji") {
+        const haystack = `${g} ${type} ${name}`;
+        return haystack.includes("houji");
+      }
 
-    if (!g) return false;
+      if (!g) return false;
 
-    // 🔥 CEREMONIAL PRIORITY
-    if (gradeVal === "ceremonial") {
-      return g.includes("ceremonial");
-    }
+      // 🔥 CEREMONIAL PRIORITY
+      if (gradeVal === "ceremonial") {
+        return g.includes("ceremonial");
+      }
 
-    // ❗ HINDI ceremonial filter:
-    const isCeremonial = g.includes("ceremonial");
-    if (isCeremonial) return false;
+      // ❗ HINDI ceremonial filter:
+      const isCeremonial = g.includes("ceremonial");
+      if (isCeremonial) return false;
 
-    if (gradeVal === "premium")  return g.includes("premium");
-    if (gradeVal === "semi")     return g.includes("semi");
-    if (gradeVal === "cafe")     return g.includes("cafe");
-    if (gradeVal === "culinary") return g.includes("culinary");
+      if (gradeVal === "premium")  return g.includes("premium");
+      if (gradeVal === "semi")     return g.includes("semi");
+      if (gradeVal === "cafe")     return g.includes("cafe");
+      if (gradeVal === "culinary") return g.includes("culinary");
 
-    return true;
+      return true;
+    });
+  }
+
+  // --- Price filter (if meron ka) ---
+  // if (priceVal !== "ALL") { ... list = list.filter(...) ... }
+
+  // ✅ Always push unavailable to the end (AFTER FILTERS)
+  list.sort((a, b) => {
+    const aa = (a.is_available === false) ? 1 : 0;
+    const bb = (b.is_available === false) ? 1 : 0;
+    return aa - bb;
   });
+
+  // ✅ Render LAST
+  renderBulkGrid(list);
 }
+
 
 
   // --- Price filter ---
@@ -958,9 +973,6 @@ if (gradeVal !== "ALL") {
       return true;
     });
   }
-
-  renderBulkGrid(list);
-}
 
 
 async function loadBulkProducts() {
