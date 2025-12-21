@@ -21,6 +21,32 @@ function forceImagePath(name = "") {
   return "assets/sample-product.jpg";
 }
 
+function promoDiscountForCart() {
+  const promo = window.SHOP_CONFIG?.PROMO;
+  if (!promo) return { active:false, discount:0, id:null, label:null };
+
+  const now = new Date();
+
+  // Start at 00:00:00
+  const start = new Date(promo.start + "T00:00:00");
+  // End at 23:59:59 (inclusive)
+  const end   = new Date(promo.end   + "T23:59:59");
+
+  const active = now >= start && now <= end;
+  if (!active) return { active:false, discount:0, id:promo.id, label:promo.label };
+
+  const qty = [...state.cart.values()].reduce((a, c) => a + (Number(c.qty) || 0), 0);
+
+  // tiers already in priority order (3 first, then 2)
+  let discount = 0;
+  for (const t of (promo.tiers || [])) {
+    if (qty >= t.minQty) { discount = Number(t.discount) || 0; break; }
+  }
+
+  return { active:true, discount, id:promo.id, label:promo.label, qty };
+}
+
+
 /* ---------- State ---------- */
 const state = {
   products: [],
@@ -197,6 +223,7 @@ function renderCheckoutPanel(forceOpen = false) {
   if (!root) return;
 
   const items = [...state.cart.values()];
+  const promoInfo = promoDiscountForCart();
   if (!items.length) {
     state.quote = null;
     state.tempReceiptId = null;
@@ -213,6 +240,7 @@ function renderCheckoutPanel(forceOpen = false) {
     courier: $("#courier")?.value || "JNT",
     region: $("#regionGroup")?.value || "NCR"
   };
+  
 
   const cartLines = items.map(i => `
     <li class="mini-cart-line">
@@ -282,6 +310,17 @@ function renderCheckoutPanel(forceOpen = false) {
         <td>Shipping</td>
         <td id="qShip">—</td>
       </tr>
+      <tr class="total">
+        <td>Total</td>
+        <td id="qTot">—</td>
+      </tr>
+
+      <!-- ✅ NEW: Discount row (show only if active & discount > 0) -->
+      <tr id="qDiscRow" style="display:${promoInfo.active && promoInfo.discount > 0 ? "" : "none"}">
+        <td>Discount</td>
+        <td id="qDisc">-${currency(promoInfo.discount)}</td>
+      </tr>
+
       <tr class="total">
         <td>Total</td>
         <td id="qTot">—</td>
@@ -365,14 +404,34 @@ async function refreshQuote(){
     });
 
     state.quote = q;
-    $("#qSub")&&($("#qSub").textContent=currency(q.subtotal));
-    if(isLala){
-      $("#qShip")&&($("#qShip").textContent="TBD (Lalamove)");
-      $("#qTot")&&($("#qTot").textContent=currency(q.subtotal));
-    }else{
-      $("#qShip")&&($("#qShip").textContent=currency(q.shipping_fee));
-      $("#qTot")&&($("#qTot").textContent=currency(q.total));
+
+    // ✅ ADD THIS LINE
+    const promoInfo = promoDiscountForCart();
+
+    $("#qSub") && ($("#qSub").textContent = currency(q.subtotal));
+
+    // show / hide discount row
+    const discRow = document.getElementById("qDiscRow");
+    const discEl  = document.getElementById("qDisc");
+
+    if (discRow) {
+      discRow.style.display =
+        promoInfo.active && promoInfo.discount > 0 ? "" : "none";
     }
+    if (discEl) {
+      discEl.textContent = `-${currency(promoInfo.discount)}`;
+    }
+    $("#qSub")&&($("#qSub").textContent=currency(q.subtotal));
+    if (isLala) {
+    $("#qShip") && ($("#qShip").textContent = "TBD (Lalamove)");
+    const total = Number(q.subtotal || 0) - Number(promoInfo.discount || 0);
+    $("#qTot") && ($("#qTot").textContent = currency(Math.max(0, total)));
+  } else {
+    $("#qShip") && ($("#qShip").textContent = currency(q.shipping_fee));
+    const total = Number(q.total || 0) - Number(promoInfo.discount || 0);
+    $("#qTot") && ($("#qTot").textContent = currency(Math.max(0, total)));
+  }
+
   }catch(err){
     console.error(err);
     $("#qSub")&&($("#qSub").textContent=currency(getCartSubtotal()));
@@ -571,6 +630,7 @@ async function finalizeOrder(){
       });
       receiptFileId = up.file_id;
     }
+    const promoInfo = promoDiscountForCart();
 
     // Finalize order sa backend
     const res = await apiFetch(`${API}?action=finalizeOrder`, {
@@ -582,7 +642,12 @@ async function finalizeOrder(){
         courier,
         region_group: region,
         shipping_fee,
-        receipt_file_id: receiptFileId
+        receipt_file_id: receiptFileId,
+        promo: promoInfo.active ? {
+          id: promoInfo.id,
+          label: promoInfo.label,
+          discount: promoInfo.discount
+        } : null
       })
     });
 
