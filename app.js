@@ -310,10 +310,7 @@ function renderCheckoutPanel(forceOpen = false) {
         <td>Shipping</td>
         <td id="qShip">—</td>
       </tr>
-      <tr class="total">
-        <td>Total</td>
-        <td id="qTot">—</td>
-      </tr>
+      
 
       <!-- ✅ NEW: Discount row (show only if active & discount > 0) -->
       <tr id="qDiscRow" style="display:${promoInfo.active && promoInfo.discount > 0 ? "" : "none"}">
