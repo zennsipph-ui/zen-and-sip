@@ -16,6 +16,8 @@ function forceImagePath(name = "") {
   const n = String(name).trim().toLowerCase();   // trims trailing spaces
   if (n.includes("suizawa")) return "assets/product/suizawa.png";
   if (n.includes("okuunmo")) return "assets/product/okuunmo.png";
+  if (n.includes("marika")) return "assets/product/Marika.jpg";
+  if (n.includes("reika")) return "assets/product/Reika.jpg";
   // add more here when you have photos:
   // if (n.includes("yamabuki")) return "assets/product/yamabuki.png";
   return "assets/sample-product.jpg";
